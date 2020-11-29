@@ -389,16 +389,30 @@ class Arrays{
     public static void sort(int length,int ... a){}
     public static void sort(int ... a){}//但是这两个函数定义的时候可以共存
     public static void main(String[] args){
-        Arrays.sort(1,2)//会报错，无法编译，但是取消第一个函数的注释后，就不会报错
+        Arrays.sort(1,2)//会报错，无法编译，所以第三个函数要删去，才没有歧义。但是取消第一个函数的注释后，就不会报错，准确匹配调用第一个函数
         Arrays.sort(new int[]{1,2});//编译通过
         Arrays.sort(1,new int[]{2,3});//编译通过
     }
 }
 ```
 
+* 形参是可变参数时，实参也可传一个数组
+
+```java
+public class Test{
+    public static void main(){
+        int[] arr={1,4,2,7,5};
+        sort(arr);
+    }
+    public static void sort(int ... arr){
+
+    }
+}
+```
+
 ### 4.8.3 递归方法
 
-* 递归方法：一个方法体内调用了它本身
+* 递归方法：一个方法体内调用(直接或间接)了它本身
 * 方法递归包含了一种隐式的循环，它会重复执行某段代码，但这种重复执行无须循环控制
 * 递归一定要向已知方向递归，否则这种递归就变成了无穷递归，类似于死循环
 * 递归的函数内部，一定要有能够使得函数停下来的条件
@@ -691,19 +705,22 @@ public class StringTest {
 * 权限修饰符的权限范围表
   |修饰符|类内部|同一个包|不同包的子类|同一个工程|
   |:-----:|:-----:|:-----:|:-----:|:-----:|
-  |private|Yes||||
-  |(缺省)|Yes|Yes|||
-  |protected|Yes|Yes|Yes||
-  |public|Yes|Yes|Yes|Yes|
+  |public|√|√|√|√|
+  |protected|√|√|√||
+  |(缺省)|√|√|||
+  |private|√||||
+
+* 局部变量没有权限修饰符的说法
 
 ## 4.11 构造器
 
 * 构造器的特征：
   * 它具有与类相同的名称
   * 它不声明返回值的类型。(与声明为void不同)
-  * 不能被static,final,synchronized,abstract,native修饰，不能又return语句返回值
+  * 不能被`static`,`final`,`synchronized`,`abstract`,`native`修饰
+  * 不能使用`return 数据`语句返回值
 * 构造器(构造方法、constructor)的使用
-  * 创建对象,同时可能会有给对象进行初始化(对象的成员属性)
+  * 创建对象,同时可能会进行对象初始化(对象的成员属性)
 * 说明：
   * 如果没有显式的定义类的构造器，则系统默认提供一个空参的构造器
   * 定义构造器的格式：`权限修饰符 类名(形参列表){}`
@@ -794,7 +811,7 @@ class Person{
   * 规定：`this(参数列表)`必须写在当前构造器的首行
   * 构造器内部，最多只能调用一个其他的构造器
 
-## 4.13 import与package
+## 4.14 import与package
 
 ### package
 
@@ -834,8 +851,11 @@ PackageTest包名：`com.agile.learn`
 Person包名：`com.agile.study`
 Test包名：`com.agile.study.aa`
 
-## 4.14 继承
+## 4.15 继承
 
+* 为什么要继承？
+  多个类中存在相同属性和行为时，将这些内容抽取到单独一个类中，那么多个类无需再定义这些属性和行为，只要继承那个类即可
+  那么此处的多个类称为子类(派生类),单独的这个类称为父类(基类或超类)
 * 继承的好处：
   * 减少了代码的冗余，提高了代码的复用性
   * 使得功能的扩展
@@ -847,7 +867,7 @@ Test包名：`com.agile.study.aa`
 
 * 继承性的体现：
   * 一旦子类A继承父类B之后，子类A中就获取了父类B中声明的所有的属性和方法。
-  * 特别的，父类中声明为private的属性或者方法，子类继承父类之后，仍然认为是获取了父类中的私有结构，只是因为封装性的影响，使得子类不能直接调用父类的私有属性
+  * 特别的，父类中声明为private的属性或者方法，子类继承父类之后，仍然认为是获取了父类中的私有结构，只是因为封装性的影响，使得子类不能直接调用父类的私有属性(可以使用setXX,getXxx)
   * 子类继承父类之后，还可以声明自己特有的属性或者方法，实现功能的扩展
 
 * Java中继承的规定：
@@ -856,17 +876,19 @@ Test包名：`com.agile.study.aa`
   * 子父类是相对的概念，一个子类也可以被其他类继承
   * 子类直接继承的父类，称为：直接父类。间接继承的父类称为：间接父类
   * 子类继承父类之后，就获取了直接父类以及所有间接父类中声明的属性和方法
-
+  * **子类无法继承父类的构造器**；但是如果子类声明了构造器，就一定会调用父类的构造器
+  * 当子类有构造器时，则父类一定也要有构造器(没有则无法编译，报错)
+  * 当子类构造器没有自己手写super调用父类构造器，则会隐式调用父类的无参构造器
 * 如果没有显式的声明一个类的父类，则此类继承于`java.lang.Object`
   所有的类都直接或间接继承于`java.lang.Object`类
   意味着，所有的java类都具有`java.lang.Object`类的属性和方法
 
-## 4.15 方法的重写
+## 4.16 方法的重写
 
 * 方法的重写是在子类继承父类之后，可以对父类中同名同参数的方法，进行覆盖操作
 * 应用：重写之后，当创建了子类对象后，通过子类对象调用父类中的同名同参数方法时，实际执行的时子类重写父类方法后的方法
 * 重写的规定：
-    方法的声明：权限修饰符 返回值类型 方法名(形参列表) throws 异常的类型{方法体}
+    方法的声明：`权限修饰符 返回值类型 方法名(形参列表) throws 异常的类型{方法体}`
     约定俗称：子类中的叫重写的方法，父类中的叫做被重写的方法
     1. 子类重写的方法的方法名和形参列表与父类被重写的方法的方法名和形参列表要相同
     2. 子类重写的方法的权限修饰符不小于父类被重写的方法的权限修饰符
@@ -876,8 +898,8 @@ Test包名：`com.agile.study.aa`
        * 父类被重写的方法的返回值类型是A类型，则子类重写的方法的返回值类型可以是A类或者A类的子类
        * 父类被重写的方法的返回值类型是基本数据类型(比如double),则子类重写的方法的返回值类型必须是相同的
     5. 子类重写的方法抛出的异常类型不大于父类被重写的方法抛出的异常类型(也就是说，被重写的方法抛出的异常类应该是父类异常，重写的方法抛出异常的类应该是相同或者是它的子类)
-    6. 子类和父类中的同名同参数的方法，要么都声明为非static的(考虑重写)，要么都声明为static的(这不是重写)
-
+    6. 子类和父类中的同名同参数的方法，要么都声明为非static的(考虑重写)，要么都声明为static的(这不是重写,父类的static方法不可重写,但父子类可以同时存在同名同参的方法，且不构成重写)
+    7. 如果父类自己只定义了一个有参的构造器（父类写了有参构造器后系统不会再给加上无参构造器)，那么子类必须写一个有参的构造器，因为子类如果不写构造器则系统默认会给子类加上一个无参构造器，此时子类无参构造器又会去调用父类的无参构造器，而现在父类没有无参构造器，则会报错。而且这个子类的有参构造器方法体第一行必须使用super来调用父类有参构造器，因为如果不写，那么会隐式加上调用父类无参构造器，而父类无参构造器不存在(父类写了有参构造器后系统不会再给加上无参构造器)，所以报错
 父类：
 
 ```java
@@ -918,7 +940,7 @@ public class StudentTest{
 }
 ```
 
-## 4.16 super关键字
+## 4.17 super关键字
 
 * super的理解：父类的
 * super可以用来调用：属性、方法、构造器
@@ -989,7 +1011,7 @@ public class StudentTest{
 
 > 虽然创建子类对象时调用了多个类的构造器，但是整个过程中只创建了一个对象
 
-## 4.17 多态
+## 4.18 多态
 
 1. 多态性，可以理解为一个事物的多种形态
 2. 对象的多态性：父类的引用指向子类的对象（子类的对象赋给父类的引用）
@@ -1081,7 +1103,7 @@ public class StudentTest{
 
 * 如果`a instanceof A`返回`true`,`a instanceof B`也返回`true`,那么A和B一定存在着继承关系(可能是直接继承，有可能间接继承)
 
-## 4.17 Object类
+## 4.19 Object类
 
 * 认识java.lang.Object类：
   * Object类是所有Java类的根父类
@@ -1237,13 +1259,13 @@ public class StudentTest{
     3. 像Sting,Date,File,包装类都重写了Object类中的toString()方法,使得在调用对象的toString()时，返回的是“实体内容”信息
     > `toString()`可以使用IDE生成，一般情况下不手写
 
-## 4.18 单元测试
+## 4.20 单元测试
 
 ### Junit单元测试
 
 //todo ,idea怎么写单元测试
 
-## 4.19 包装类的使用
+## 4.21 包装类的使用
 
 * 针对8种基本数据类型定义相应的引用类型---包装类(封装类)
 * 可以使用包装类对原本的基本数据类型的数据功能扩展，进行更多便利的操作
@@ -1355,7 +1377,7 @@ public static void method(Object obj){
   //
   ```
 
-## 4.20 static关键字
+## 4.22 static关键字
 
 * static:静态的
 * static可以用来修饰：属性，方法，代码块，内部类
@@ -1375,6 +1397,12 @@ public static void method(Object obj){
   * 关于静态属性和静态方法的使用，可以从生命周期角度区理解：静态的成员是在类的加载时就有的，但是实例成员都还不存在，无法调用
 
 ### 单例设计模式
+
+* 设计模式是在大量的实践中总结和理论化之后代码结构、编程风格、以及解决问题的思考方法
+* 常见的设计模式(23种)
+  1. 创建型模式(5种)：工厂方法模式、抽象工厂模式、单例模式、建造者模式、原型模式
+  2. 结构型模式(7种)：适配器模式、装饰器模式、代理模式、外观模式、桥接模式、组合模式、享元模式
+  3. 行为型模式(11种)：策略模式、模板方法模式、观察者模式、迭代器模式、责任链模式、命令模式、备忘录模式、中介者模式、解释器模式
 
 单例设计模式：就是采取一定的方法保证在整个软件系统中，对某个类只能存在一个对象实例
 
@@ -1438,19 +1466,19 @@ class Bank{
   3. 数据库连接池：因为数据库连接是一种数据库资源
   4. 读取配置文件的类：没有必要每次使用配置文件数据，都生成一个对象去读取
 
-## 4.21 代码块
+## 4.23 代码块
 
 * 代码块，又称初始化块
 * 代码块的作用：用来初始化类、对象
 * 代码块如果有修饰的话，只能使用static
 * 分类：静态代码块、非静态代码块
 * 静态代码块
-  * 随着类的加载而执行，而且只执行一次
+  * **随着类的加载而执行，而且只执行一次**
   * 初始化类的信息
   * 一个类中有多个静态代码块，则按照声明的先后顺序执行
   * 静态代码块的执行先于非静态代码块
 * 非静态代码块
-  * 随着对象的创建而执行，每创建一个对象，就执行一次非静态代码块;
+  * **随着对象的创建而执行，每创建一个对象，就执行一次非静态代码块**
   * 可以在创建对象时，对对象的属性等进行初始化
   * 一个类中有多个非静态代码块，则按照声明的先后顺序执行
 * 非静态代码块可以调用静态的成员，也可调用非静态的成员
@@ -1466,4 +1494,576 @@ class Person{
     }
 }
 ```
-//代码块执行先后顺序，还有示例，todo
+
+* 示例1
+
+```java
+class Root{
+    static{
+        System.out.println("Root的静态初始化块");
+    }
+    {
+        System.out.println("Root的普通初始化块");
+    }
+    public Root(){
+        System.out.println("Root的无参构造器");
+    }
+}
+class Mid extends Root{
+    static{
+        System.out.println("Mid的静态初始化块");
+    }
+    {
+        System.out.println("Mid的普通初始化块");
+    }
+    public Mid(){
+        System.out.println("Mid的无参构造器");
+    }
+    public Mid(String msg){
+        System.out.println("Mid的带参构造器，参数值："+msg);
+    }
+}
+class Leaf extends Mid{
+    static{
+        System.out.println("Leaf的静态初始化块");
+    }
+    {
+        System.out.println("Leaf的普通初始化块");
+    }
+    public Leaf(){
+        super("JavaSE");
+        System.out.println("Leaf的构造器");
+    }
+}
+public class LeafTest{
+    public static void main(String[] args){
+        new Leaf();
+        System.out.println("****************");
+        new Leaf();
+    }
+}
+```
+
+结果输出为：
+
+```text
+Root的静态初始化块
+Mid的静态初始化块
+Leaf的静态初始化块
+Root的普通初始化块
+Root的无参构造器
+Mid的普通初始化块
+Mid的带参构造器，参数值：JavaSE
+Leaf的普通初始化块
+Leaf的构造器
+****************
+Root的普通初始化块
+Root的无参构造器
+Mid的普通初始化块
+Mid的带参构造器，参数值：JavaSE
+Leaf的普通初始化块
+Leaf的构造器
+```
+
+>可以通过debug的方式调试代码的执行步骤，也能看出它们的执行顺序
+
+* 示例2
+
+```java
+class Father{
+    static{
+        System.out.println("111");
+    }
+    {
+        System.out.println("222");
+    }
+    public Father(){
+        System.out.println("333");
+    }
+}
+public class Son extends Father{
+    static{
+        System.out.println("444");
+    }
+    {
+        System.out.println("555");
+    }
+    public Son(){
+        System.out.println("666");
+    }
+    public static void main(String[] args){
+        System.out.println("777");
+        System.out.println("****");
+        new Son();
+        System.out.println("****");
+        new Son();
+    }
+}
+```
+
+结果输出为：
+
+```text
+111
+444
+777
+****
+222
+333
+555
+666
+****
+222
+333
+555
+666
+```
+
+* 属性可以赋值的位置
+  ①默认初始化
+  ②显式初始化/⑤在代码块中赋值
+  ③构造器中初始化
+  ④有了对象后，可以通过`对象.属性`或`对象.setXxx()`进行赋值
+
+* 示例3
+
+```java
+public class OrderTest {
+    public static void main(String[] args) {
+        Order order=new Order();
+        System.out.println(order.orderId);
+
+    }
+}
+
+class Order{
+    String orderId="33";
+    {
+        orderId="44";
+    }
+    //String orderId="33";在这里显式初始化成员变量则输出的是33
+    //String orderId;//仅仅只是声明变量，那么声明无论在代码块的上下位置，输出都是44
+}
+```
+
+## 4.24 final关键字
+
+* final:最终的
+* final 可以用来修饰的结构：类、方法、变量
+* final修饰类
+   1. 此类不能被其他类所继承，比如`public final class String`,System类，StringBuffer类
+* final 用来修饰方法：表示此方法不能被子类重写，比如：Object类中的getClass()
+* final用来修饰变量：此时的“变量”称为是一个常量
+  * final修饰属性，可以考虑的赋值位置：显式初始化、代码块中初始化、构造器
+
+    ```java
+    public class FinalTest{
+        final int WIDTH=0;
+        final int LEFT;
+        final int RIGHT;
+        {
+            LEFT=1;
+        }
+        public FinalTest(){
+            RIGHT=2;
+        }
+        public FinalTest(int n){
+            RIGHT=n;
+        }
+
+    }
+    ```
+
+  * final修饰局部变量：final修饰形参后，表明形参是一个常量，当调用此方法传递实参后，就不能再重新赋值修改
+
+    ```java
+    public class FinalTest{
+        public method1(final int n){//n不可修改值
+            final int num=10;//方法体内声明并初始化一个final修饰的变量
+        }
+    }
+    ```
+
+* static final 用来修饰属性：全局常量
+* final修饰一个引用型变量，此时该变量指向的地址空间不可修改，但是指向的对象，其对象的属性可以修改
+  
+  ```java
+  public class Something{
+      public static void main(String[] args){
+          Other o=new Other();
+          new Something().addOne(o);
+      }
+      public void addOne(final Other o){
+          //o=new Other();不能再次修改o的指向
+          o.i++;//o.i=1;
+      }
+  }
+  class Other{
+      public int i;
+  }
+  ```
+
+## 4.25 抽象类和抽象方法
+
+### abstract关键字的使用
+
+* abstract：抽象的
+* abstract可以用来修饰的结构：类、方法
+* abstract修饰类：抽象类
+  * 此类不能实例化
+  * 抽象类一定要有构造器，便于子类实例化时调用
+  * 开发中，都会提供抽象类的子类，让子类对象实例化
+* abstract修饰方法：抽象方法
+  * 抽象方法只有方法的声明，没有方法体
+  * 包含抽象方法的类，一定是抽象类；反之，抽象类不一定有抽象方法
+  * 若子类重写了父类(包括间接父类)中的所有的抽象方法，此子类方可实例化；若子类没有重写父类(包括间接父类)中的所有的抽象方法，则此子类也是一个抽象类，需要使用abstract修饰
+* 抽象类是用于一个父类它本身不需要写太多东西，并且用abstract修饰其声明的方法，让子类去实现
+* abstract不能用来修饰：属性、构造器等
+* abstract不能用来修饰私有方法、静态方法、final修饰的方法(这种方法不能被重写)、final修饰的类(这种类不能被继承)
+
+```java
+abstract class Person{
+    String name;
+    int age;
+    public Person(){
+
+    }
+    public Person(String name,int age){
+        this.name=name;
+        this.age=age;
+    }
+    //这不是抽象方法
+    public void eat(){
+
+    }
+    //抽象方法
+    public abstract void eat();
+}
+```
+
+* 创建抽象类的匿名子类以及匿名子类的匿名对象
+
+```java
+abstract class Person{
+    public void hello(){};
+}
+public class Test{
+    public static void main(String[] args){
+        //创建了抽象类的匿名子类，但是匿名子类的对象不是匿名的
+        Person person=new Person(){
+            @Override
+            public void hello(){
+                System.out.println("子类hello");
+            }
+        };
+        method(person);//输出：子类hello
+
+        //创建了抽象类的匿名子类，且匿名子类的对象也是匿名的
+        method(new Person(){
+            @Override
+            public void hello(){
+                System.out.println("子类hello");
+            }
+        });//输出：子类hello
+    }
+    public static method(Person person){
+        person.hello();
+    }
+}
+```
+
+>匿名子类的父类不一定要是抽象类，其他的满足要求的父类都可
+
+### 模板方法设计模式
+
+* 抽象类体现的就是一种模板模式的设计，抽象类作为子类的通用模板，子类在抽象类的基础上进行扩展、改造，但子类总体上会保留抽象类的行为方式
+* 解决的问题：
+  * 当功能内部一部分实现是确定的，一部分实现是不确定的，这时可以把不确定的部分暴露出去，让子类去实现
+  * 换句话说，在软件开发中实现一个算法时，整体步骤很固定、通用，这些步骤已经在父类中写好了，但是某些部分易变，可以把易变部分抽象出来，供不同子类实现，这就是一种模板模式
+
+* 示例1：
+
+```java
+public class TemplateTest{
+    public static void main(String[] args){
+        SubTemplate t=new SubTemplate();
+        t.spendTime();//打印所花的时间
+    }
+}
+//计算某段代码花费的时间
+abstract class Template{
+    public void spendTime(){
+        long start = System.currentTimeMillis();
+        code();
+        long end = System.currentTimeMillis();
+        System.out.println("花费的时间为："+(end-start));
+    }
+    public abstract void code();
+}
+class SubTemplate extends Template{
+    @Override
+    public void code(){
+        //子类code函数具体的业务
+    }
+}
+```
+
+* 示例2：
+
+```java
+public class TemplateMethodTest{
+    public static void main(String[] args){
+        BankTemplateMethod btm=new DrawMoney();
+        btm.process();
+        BankTemplateMethod btm2=new ManageMoney();
+        btm2.process();
+    }
+}
+abstract class BankTemplateMethod{
+    public void takeNumber(){
+        System.out.println("取号排队");
+    }
+    public abstract void transact();//办理具体的业务//钩子方法
+    public void evaluate(){
+        System.out.println("反馈评分");
+    }
+    public final void process(){
+        takeNumber();
+        transact();//像个钩子，具体执行时，挂哪个子类，就执行哪个子类的实现代码
+        evaluate();
+    }
+}
+```
+
+* 模板方法设计模式是编程中经常用得到的模式，各框架、类库中都有他的身影，比如：
+  1. 数据库访问的封装
+  2. Junit单元测试
+  3. JavaWeb的Servlet中关于doGet/doPost方法调用
+  4. Hibernate中模板程序
+  5. Spring中JDBCTemplate、HibernateTemplate等
+
+## 4.26 接口
+
+* 有时必须从几个类中派生出一个子类，继承它们所有的属性和方法。但是Java不支持多重继承。有了接口，就可以得到多重继承的效果
+* 有时必须从几个类中抽取一些共同的行为特征，但是它们不是像子父类那像的关系，仅仅是具有相同的行为特征而已，比如：鼠标，键盘，打印机，扫描仪，手机，移动硬盘..等都支持USB连接。现在如果把USB连接功能抽象出一个类出来，然后让其他电子配件来继承自它，明显不合适，这些电子配件只是具有USB功能，而不是USB的衍生子类
+* 接口就是规范，定义的是一组规则，体现了现实实际中“如果要....则必须能”的规范思想，**继承是一个“是不是”的关系，而接口实现则是“能不能”的关系**
+* **接口的本质是契约，标准，规范**，就像法律，制定好后要都遵守。
+
+![接口举例](../images/接口的生活举例.png)
+
+* 接口的使用：
+  1. 接口使用`interface`来定义
+  2. Java中，接口和类是并列的两个结构
+  3. 如何定义接口，定义接口中的成员
+     * JDK7以及以前，只能定义全局常量和抽象方法
+       * 全局常量：`public static final`格式，但是书写时可以省略，仍认为时全局常量
+       * 抽象方法：`public abstract`格式
+     * JDK8,除了定义全局常量和抽象方法之外，还可以定义静态方法、默认方法
+  4. 接口中不能定义构造器！！也就是说接口不可实例化
+  5. Java开发中，接口通过让类去实现(implements)的方式来使用
+  6. 如果实现类覆盖(重写，但严格好像没有这个说法)接口的所有抽象方法，则该类可以实例化
+  7. 如果实现类没有覆盖接口中所有的抽象方法，则此实现类仍为一个抽象类
+  8. Java类可以实现多个接口，弥补了Java单继承的局限性
+     格式：`class AA extends BB implements CC,DD,EE`
+
+```java
+interface Flyable{
+    //全局常量
+    public static final int MAX_SPEED=7900;
+    int MIN_SPEED=1;
+
+    //抽象方法
+    public abstract void fly();
+    void stop();//也是抽象方法，省略了public abstract
+}
+public class InterfaceTest{
+    public static void main(String[] args){
+        System.out.println(Flyable.MAX_SPEED);
+        Flyable.MIN_SPEED=2;//此处这样写会报错，无法编译，此成员属性默认是全局常量
+    }
+}
+
+abstract class Plane implements Flyable{
+    @Override
+    public void fly(){
+        System.out.println("fly");
+    }
+    //因为没有实现stop这个抽象方法，所有该类只能仍是一个抽象类，类修饰符abstract必须加上，除非实现了所有的抽象方法
+}
+```
+
+* 类和类之间是继承关系，类和接口之间是实现功能的关系，接口和接口是继承关系，而且可以多继承
+  当一个接口继承了多个接口后，类实现该接口时，就需要把该接口所继承的所有接口功能都要实现(当此类是抽象类时不用全部实现，但只要不是抽象类，就必须全部实现)
+
+  ```java
+  interface AA{
+      void method1();
+  }
+  interface BB{
+      void method2();
+  }
+  interface CC extends AA,BB{
+
+  }
+  class DD implements CC{
+      @Override
+      public void method1(){
+          //方法内容
+      }
+
+      @Override
+      public void method2(){
+          //方法内容
+      }
+  }
+  ```
+
+* **接口的具体使用，体现了多态性**
+* 接口，实际上可以看作是一种规范
+* 开发中，面向接口编程
+
+>抽象类和接口有哪些异同？
+  //todo
+
+* 创建接口的匿名实现类以及匿名实现类的匿名对象
+  >与抽象类实现匿名子类以及匿名子类的匿名对象相似
+
+### 接口的应用
+
+* 代理模式
+  代理模式是Java开发中使用较多的一种设计模式。代理设计就是为其他对象提供一种代理以控制对这个对象的访问
+  就好比，租客找房，但是不是直接找房东，而是去找房屋中介
+
+```java
+public class NetWorkTest{
+    public static void main(String[] args){
+        Server server=new Server();
+        ProxyServer proxyServer=new ProxyServer(server);
+        proxyServer.browse();
+    }
+}
+interface NetWork{
+    public void browse();
+}
+//被代理类
+class Server implements NetWork{
+    @Override
+    public void browse(){
+        System.out.println("真实的服务器访问网络");
+    }
+}
+//代理类
+class ProxyServer implements NetWork{
+    private NetWork work;
+    public ProxyServer(NetWork work){//这里传入的实际上是被代理类,也说明了接口的实现在使用上也体现了多态性
+        this.work=work;
+    }
+    public void check(){
+        System.out.println("联网之前的检查工作");
+    }
+    @Override
+    public void browse(){
+        check();
+        work.browse();//由于传入的实际上是被代理类，所以执行的也应是被代理类的方法
+    }
+}
+```
+
+> 以上是一个静态代理的实例，专门为一个业务来写了一个代理类
+
+### 接口的应用：代理模式
+
+* 应用场景：
+  1. 安全代理：屏蔽对真实角色的直接访问
+  2. 远程代理：通过代理类处理远程方法调用(RMI)
+  3. 延迟加载：先加载轻量级的代理对象，真正需要再加载真实对象
+
+* 分类：
+  1. 静态代理（静态定义代理类）
+  2. 动态代理（动态生成代理类）
+     JDK自带的动态代理，需要反射等知识
+
+## 2.27 内部类
+
+* Java中允许将一个类A声明在另一个类B中，则类A就是内部类，类B称为外部类
+* 内部类的分类：成员内部类(静态、非静态)；局部内部类(方法内、代码块内、构造器内)
+* 成员内部类：
+  * 作为外部类的成员：可以调用外部类的结构;可以被static修饰;可以被4种权限修饰
+  * 作为一个类，可以定义属性、方法、构造器等；可以被继承；可以被final修饰；可以被abstract修饰
+* 对于静态成员内部类，通过`外部类.内部类`方式来使用；非静态的成员内部类，需要外部类进行实例化后，以对象使用属性的方式访问内部类，内部类实例化
+
+```java
+public class InnerClassTest {
+    public static void main(String[] args) {
+        //静态的成员内部类
+        Person.Dog dog = new Person.Dog();
+        dog.show();
+
+        //非静态的成员内部类
+        Person p = new Person();
+        Person.Bird bird = p.new Bird();
+    }
+}
+
+class Person {
+    String name;
+    int age;
+
+    public void eat() {
+        System.out.println("person ,eat");
+    }
+
+    //非成员内部类
+    class Bird {
+        String name;
+
+        public Bird() {
+
+        }
+
+        public void sing() {
+            System.out.println("bird");
+            Person.this.eat();//调用外部类的非静态属性
+            eat();
+            System.out.println(age);
+        }
+
+        public void display(String name) {
+            System.out.println(name);//方法形参
+            System.out.println(this.name);//内部类的属性
+            System.out.println(Person.this.name);//外部类的属性
+        }
+    }
+
+    static class Dog {
+        String name;
+        int age;
+
+        public void show() {
+            System.out.println(name + "is a dog");
+            //eat();静态内部类可以直接调用外部类中的静态方法，但是不能调用外部类中的非静态方法
+        }
+    }
+
+    {
+        //局部内部类
+        class B {
+
+        }
+    }
+
+    public Comparable getCompareable() {
+        return new Comparable() {
+            @Override
+            public void compareTo() {
+                System.out.println("在方法里新建了匿名内部类(它是一个接口的实现)的匿名对象");
+            }
+        };
+    }
+
+}
+
+interface Comparable {
+    public abstract void compareTo();
+}
+```
