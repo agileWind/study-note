@@ -703,12 +703,12 @@ public class StringTest {
   3. 具体的，4种权限都可以修饰类的内部结构：属性、方法、构造器、内部类
      修饰类的只能是：缺省、public
 * 权限修饰符的权限范围表
-  |修饰符|类内部|同一个包|不同包的子类|同一个工程|
-  |:-----:|:-----:|:-----:|:-----:|:-----:|
-  |public|√|√|√|√|
-  |protected|√|√|√||
-  |(缺省)|√|√|||
-  |private|√||||
+  |  修饰符   | 类内部 | 同一个包 | 不同包的子类 | 同一个工程 |
+  | :-------: | :----: | :------: | :----------: | :--------: |
+  |  public   |   √    |    √     |      √       |     √      |
+  | protected |   √    |    √     |      √       |            |
+  |  (缺省)   |   √    |    √     |              |            |
+  |  private  |   √    |          |              |            |
 
 * 局部变量没有权限修饰符的说法
 
@@ -719,10 +719,11 @@ public class StringTest {
   * 它不声明返回值的类型。(与声明为void不同)
   * 不能被`static`,`final`,`synchronized`,`abstract`,`native`修饰
   * 不能使用`return 数据`语句返回值
+  * 一旦加上了返回值类型，那么这就不是构造器了
 * 构造器(构造方法、constructor)的使用
   * 创建对象,同时可能会进行对象初始化(对象的成员属性)
 * 说明：
-  * 如果没有显式的定义类的构造器，则系统默认提供一个空参的构造器
+  * 如果没有显式的定义类的构造器，则系统默认提供一个空参的构造器,其权限修饰符和类的权限修饰符一致
   * 定义构造器的格式：`权限修饰符 类名(形参列表){}`
   * 一个类中定义多个构造器，相互构成重载
   * 一旦显式定义了类的构造器之后，系统就不再提供默认的空参构造器
@@ -798,7 +799,15 @@ class Person{
     }
 }
 ```
+* 使用形式：
+  `this.成员属性`
+  `this.成员方法`
+  `this()或者this(参数列表)`：调用当前正在创建的对象的其他构造器
 
+* this使用位置
+  * this在实例初始化相关的非静态代码块和构造器中：表示正在创建的那个实例对象，即正在new谁，this就代表谁
+  * this在非静态实例方法中：表示调用该方法的对象，即谁在调用，this就代表谁。
+  * this不能出现在静态代码块和静态方法中，此时静态变量的setXxx方法内可以使用`类名.私有静态属性`来使用
 * this关键字的使用：
   * this可以用来修饰：属性、方法、构造器
   * this修饰属性和方法，this理解为当前对象
@@ -943,13 +952,21 @@ public class StudentTest{
 ## 4.17 super关键字
 
 * super的理解：父类的
+* super的使用位置：构造器，非静态方法，非静态代码块
+* 格式：
+  `super.成员属性`
+  `super.成员方法`
+  `super()或super(参数列表)`
 * super可以用来调用：属性、方法、构造器
 * 使用super来调用父类的属性或者方法，因为方法会被子类重写，但是想调用父类的方法就可以使用`super.方法()`
-* 类的属性没有覆盖(重写)的说法，**子类可以定义与父类完全相同的属性，此时子类就有了两个同名的属性**，想要指定调用父类的同名属性，就必须使用`super.属性`
+* 类的属性没有覆盖(重写)的说法，**子类可以定义与父类完全相同的属性，此时子类就有了两个同名的属性**，想要指定调用父类的同名属性，就必须使用
+* `super.`查找的是直接父类或者间接父类的成员
+* `super.属性`
 * 在子类的方法或构造器中，通过使用super关键字调用父类中声明的属性或者方法，但是通常情况下(当没有重写方法或者属性不重名)，可以省略
 
 * super调用构造器
   * 格式：`super(参数列表);`,调用父类中声明的指定构造器
+  * **super调用构造器时调用的是直接父类**，多层继承的情况下不会继续查找
   * `super(参数列表);`只能写在子类构造器中，且必须是首行
   * 也就是说，在子类的一个构造器中，`this(参数列表)`与`super(参数列表);`至多只能出现一个
   * 在子类构造器的首行，没有显式的声明`this(参数列表)`和`super(参数列表);`则默认调用的是父类中空参的构造器：super()
@@ -1032,7 +1049,9 @@ public class StudentTest{
    * 方法的重写
 
 5. 应用场景：
-   有一个方法处理一个事物，需要传入一个形参，这个形参可能是涉及很多子类，如果写成父类形参类型，然后在方法体内调用该参数具体子类的各自的方法
+   * 父类类型作为方法形式参数，子类对象为实参。
+   * 数组元素类型声明为父类类型，实际存储的是子类对象
+   * 方法的返回值类型声明为父类的类型，实际返回值是子类对象
 
    ```java
    public void daData(Connection conn){//conn可能是mysql，oracle，mssql...
@@ -1049,6 +1068,7 @@ public class StudentTest{
 
 ### 虚拟方法调用
 
+* 虚方法：可以被子类重写
 * 正常的方法调用
   没有继承关系；或者虽然有继承，但是子类调用的方法是子类自己新定义的,特有的
 * 虚拟方法调用(多态情况)
@@ -1101,18 +1121,52 @@ public class StudentTest{
   }
   ```
 
+```java
+public class DogTest {
+    public static void main(String[] args) {
+        Animal dog=new Dog();
+        ThaidiDog thaidiDog=(ThaidiDog)dog;//编译通过，但是运行不通过，这两段代码相当于把Dog类型的对象转换成了ThaidiDog类型，这是不允许的
+        //运行时类型的对象应该小于声明的变量类型
+    }
+}
+
+class Animal{
+
+}
+
+class Dog extends Animal{
+
+}
+
+class ThaidiDog extends Dog{
+
+}
+```
+
+* 无论是向上转型还是向下转型，对象的运行时类型，从头到尾没有改变过，这里说的转型指的是在编译时，所以无论怎么转型，运行时类型都没变化
 * 如果`a instanceof A`返回`true`,`a instanceof B`也返回`true`,那么A和B一定存在着继承关系(可能是直接继承，有可能间接继承)
 
 ## 4.19 Object类
 
-* 认识java.lang.Object类：
-  * Object类是所有Java类的根父类
-  * 如果在类的声明中未使用extends关键字指明其父类，则默认父类为java.lang.Object类
-  * Object类中的功能(属性、方法)就具有通用性
-  * Object类只声明了一个空参的构造器
+### 认识java.lang.Object类
 
-* Object类中的方法：
-  * `protected Object clone()`
+* Object类是所有Java类的根父类
+* 如果在类的声明中未使用extends关键字指明其父类，则默认父类为java.lang.Object类
+* Object类中的功能(属性、方法)就具有通用性
+* Object类只声明了一个空参的构造器
+
+```java
+Object obj1=new int[5];//可以编译，因为Object是所有引用数据类型的父类，当然可以接收int[]数组
+int[] obj2=(int[])obj1;//但是使用前需要转换数据类型
+obj2[0]=1;
+
+Object[] obj3=new String[5];
+Object[] obj4=new int[5];//错误，编译不通过，int是基本数据类型，不是Object的子类
+```
+
+### Object类中的方法
+
+* `protected Object clone()`
 
     ```java
     Person p=new Person();
@@ -1124,11 +1178,11 @@ public class StudentTest{
     //说明clone是在内存中重新开辟了一个空间来存对象的信息
     ```
 
-  * `protected void finalize()`
+* `protected void finalize()`
     垃圾回收器gc在内存中回收某对象之前就会让对象去执行该方法
 
     ```java
-        class Student extends Person {
+    class Student extends Person {
 
         @Override
         protected void finalize() {
@@ -1146,118 +1200,161 @@ public class StudentTest{
     }
     ```
 
-    * `class<?> getClass()`
-    用来获取该变量的数据类型，反射功能会用到
+* `class<?> getClass()`
+    用来获取该变量的(运行时)数据类型，反射功能会用到
 
-    > `int hashCode()`得学习到集合时再了解
-    > `void notify()`,`void notifyAll()`,`void wait()`,`wait(long timeout)`,`wait(long timeout,int nanos)`这些得学习多线程之后再了解
+* `int hashCode()`得学习到集合时再了解
+* `void notify()`,`void notifyAll()`,`void wait()`,`wait(long timeout)`,`wait(long timeout,int nanos)`这些得学习多线程之后再了解
 
-    * `equals()`
+* hashCode 的常规协定：
+      ①如果两个对象的hash值是不同的，那么这两个对象一定不相等；
+      ②如果两个对象的hash值是相同的，那么这两个对象不一定相等。
+      >因为在集合Set和Map要保证存入的元素唯一，互不相同，需要判断两个对象是否相等，而这用到了equals和hashcode
+      >Set区别对象是不是唯一的标准是，两个对象hashcode是不是一样，再判定两个对象是否equals;
+
+* Map 是先根据Key值的hashcode分配和获取对象保存数组下标的，然后再根据equals区分唯一值
+
+* `equals()`
      问：`==`和`equals()`区别
      ==，是一个运算符
      1. 可以使用在基本数据类型变量和引用数据类型变量中
      2. 如果比较的是基本数据类型变量，比较两个变量保存得数据是否相等(数据类型不一定要相同)
 
-    ```java
-    int i=10;
-    int j=10;
-    double d=10.0;
-    System.out.println(i==j);//true
-    System.out.println(i==j);//true
+```java
+int i=10;
+int j=10;
+double d=10.0;
+System.out.println(i==j);//true
+System.out.println(i==j);//true
 
-    boolean b=true;
-    System.out.println(b==b);//无法编译通过
+boolean b=true;
+System.out.println(b==b);//无法编译通过
 
-    char c=10;
-    System.out.println(i==c);//true
+char c=10;
+System.out.println(i==c);//true
 
-    Person p1=new Person("Tom",18);
-    Person p2=new Person("Tom",18);
-    System.out.println(p1==p2);//false,因为这两个变量存的是对象在堆中的首地址值
+Person p1=new Person("Tom",18);
+Person p2=new Person("Tom",18);
+System.out.println(p1==p2);//false,因为这两个变量存的是对象在堆中的首地址值
 
-    String s1=new String("abc");
-    String s2=new String("abc");
-    System.out.println(s1==s2);//false,同理
+String s1=new String("abc");
+String s2=new String("abc");
+System.out.println(s1==s2);//false,同理
 
-    String s3="abcd";
-    String s4="abcd";
-    System.out.println(s3==s4);//true,这个是比较特殊的，这种写法，虽然也是存的地址值，但不是堆中的，而是方法区中的某地址，因为"abcd"这是字符串常量，常量放在了常量池中
-    ```
+String s3="abcd";
+String s4="abcd";
+System.out.println(s3==s4);//true,这个是比较特殊的，这种写法，虽然也是存的地址值，但不是堆中的，而是方法区中的某地址，因为"abcd"这是字符串常量，常量放在了常量池中
+```
 
-    `equals`
+* `equals`
     1. 是一个方法，不是运算符
     2. 只能适用于引用数据类型
     3. `Object`类中`equals()`的定义：
 
-       ```java
-       public boolean equals(Object obj){
-           return (this == obj);
-       }
-       ```
+    ```java
+    public boolean equals(Object obj){
+        return (this == obj);
+    }
+    ```
 
-       > 可以看出，Object类中定义的equals()和==的作用是相同的，比较两个对象的地址值是否相同，即两个引用是否指向同一个地址空间
-    4. 像`String`、`Date`、`File`、一些基本数据类型的包装类都重写了Object类中的`equals()`方法，比较的不是两个引用地址是否相同，而是比较对象的“实体内容”是否相同
+> 可以看出，Object类中定义的equals()和==的作用是相同的，比较两个对象的地址值是否相同，即两个引用是否指向同一个地址空间
 
-     ```java
-     Person p1=new Person("Tom",20);
-     Person p2=new Person("Tom",20);
-     System.out.println(p1.equals(p2));//false,这里与运用==的效果是相同的
+* 像`String`、`Date`、`File`、一些基本数据类型的包装类都重写了Object类中的`equals()`方法，比较的不是两个引用地址是否相同，而是比较对象的“实体内容”是否相同
 
-     String s1=new String("abc");
-     String s2=new String("abc");
-     System.out.println(s1.equals(s2));//true,因为String类重写了equals方法，比较的是对象的内容
-     ```
+```java
+Person p1=new Person("Tom",20);
+Person p2=new Person("Tom",20);
+System.out.println(p1.equals(p2));//false,这里与运用==的效果是相同的
 
-     所以也可以在自己定义的类中重写`equals()`,如下代码：
+String s1=new String("abc");
+String s2=new String("abc");
+System.out.println(s1.equals(s2));//true,因为String类重写了equals方法，比较的是对象的内容
+```
 
-     ```java
-     class Person{
-         public int age;
-         public String name;
-         //....
+所以也可以在自己定义的类中重写`equals()`,如下代码：
 
-         @Override
-         public boolean equals(Object){
-             if(this==obj){
-                 return true;
-             }
-             if(obj instanceof Person){
-                 Person person=(Person)obj;
-                 return this.age==person.age&&this.name.equals(person.name);
-             }
-             return false;
-         }
-     }
-     ```
+```java
+class Person{
+    public int age;
+    public String name;
+    //....
 
-     > 一般不用在自己的自定义类中亲自重写`equals()`，IDE里面可以生成，就像setXxx,getXxx那样
-    * 重写equals方法的原则：
-      * 对称性：如果`x.equals(y)`返回的是`true`,那么`y.equals(x)`也应该返回的是`true`
-      * 自反性：`x.equals(x)`必须返回的是`true`
-      * 传递性：如果`x.equals(y)`返回的是`true`，且`y.equals(z)`返回的是`true`,那么`x.equals(z)`也应该返回的是`true`
-      * 一致性：如果`x.equals(y)`返回的是`true`，只要x和y内容一直不变，那么不管重复多少次`x.equals(y)`，返回的都是`true`
-      * 任何情况下，`x.equals(null)`,总是返回`false`
-      * `x.equals(和x不同类型的对象)`总是返回`false`
+    @Override
+    public boolean equals(Object){
+        if(this==obj){
+            return true;
+        }
+        if(obj instanceof Person){
+            Person person=(Person)obj;
+            return this.age==person.age&&this.name.equals(person.name);
+        }
+        return false;
+    }
+}
+```
 
-    `toString()`
+> 一般不用在自己的自定义类中亲自重写`equals()`，IDE里面可以生成，就像setXxx,getXxx那样
+
+* 重写equals要求：
+  * 如果重写equals，那么一定要一起重写hashCode()方法
+  * 如果两个对象调用equals返回true，那么要求这两个对象的hashCode值一定是相等的
+  * 如果两个对象的hashCode值不同的，那么要求这个两个对象调用equals方法一定是false
+  * 如果两个对象的hashCode值相同的，那么这个两个对象调用equals可能是true，也可能是false
+* 重写equals方法的原则：
+  * 对称性：如果`x.equals(y)`返回的是`true`,那么`y.equals(x)`也应该返回的是`true`
+  * 自反性：`x.equals(x)`必须返回的是`true`
+  * 传递性：如果`x.equals(y)`返回的是`true`，且`y.equals(z)`返回的是`true`,那么`x.equals(z)`也应该返回的是`true`
+  * 一致性：如果`x.equals(y)`返回的是`true`，只要x和y内容一直不变，那么不管重复多少次`x.equals(y)`，返回的都是`true`
+  * 任何情况下，`x.equals(null)`,总是返回`false`
+  * `x.equals(和x不同类型的对象)`总是返回`false`
+* 重写`hashCode`示例如下：
+
+```java
+class Person {
+    public String name;
+    public int age;
+
+    Person(String name,int age){
+        this.name=name;
+        this.age=age;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Person person = (Person) o;
+        return age == person.age &&
+                name.equals(person.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, age);
+    }
+}
+```
+
+`toString()`
     1. 当输出一个对象的引用时，实际上就是调用当前对象的`toString()`
 
-        ```java
-        Person person=new Person();
-        System.out.println(person);//输出的时类名和hashcode拼起来的字符串
-        System.out.println(person.toString());//两个输出相同
-        ```
+```java
+Person person=new Person();
+System.out.println(person);//输出的时类名和hashcode拼起来的字符串
+System.out.println(person.toString());//两个输出相同
+```
 
-    2. Object类中toString()的定义
+* Object类中toString()的定义
 
-        ```java
-        public String toString(){
-            return getClass().getName()+"@"+Integer.toHexString(hashCode());
-        }
-        ```
+```java
+public String toString(){
+    return getClass().getName()+"@"+Integer.toHexString(hashCode());
+}
+```
 
-    3. 像Sting,Date,File,包装类都重写了Object类中的toString()方法,使得在调用对象的toString()时，返回的是“实体内容”信息
-    > `toString()`可以使用IDE生成，一般情况下不手写
+1. 像Sting,Date,File,包装类都重写了Object类中的toString()方法,使得在调用对象的toString()时，返回的是“实体内容”信息
+
+ > `toString()`可以使用IDE生成，一般情况下不手写
 
 ## 4.20 单元测试
 
@@ -1270,16 +1367,16 @@ public class StudentTest{
 * 针对8种基本数据类型定义相应的引用类型---包装类(封装类)
 * 可以使用包装类对原本的基本数据类型的数据功能扩展，进行更多便利的操作
 
-|基本数据类型|包装类|
-|:-----:|:-----:|
-|`byte`|`Byte` |
-|`short`|`Short`|
-|`int`|`Integer`|
-|`long`|`Long`|
-|`float`|`Float`|
-|`double`|`Double`|
-|`boolean`|`Boolean`|
-|`char`|`Character`|
+| 基本数据类型 |   包装类    |
+| :----------: | :---------: |
+|    `byte`    |   `Byte`    |
+|   `short`    |   `Short`   |
+|    `int`     |  `Integer`  |
+|    `long`    |   `Long`    |
+|   `float`    |   `Float`   |
+|   `double`   |  `Double`   |
+|  `boolean`   |  `Boolean`  |
+|    `char`    | `Character` |
 > 其中上面前6种表示数字的包装类，它们都有一个父类`Number`
 
 ### 基本数据类型和包装类，String互相转换
@@ -1374,7 +1471,12 @@ public static void method(Object obj){
   Integer x=128;
   Integer y=128;
   System.out.println(x==y);//false，超出了Integer类中缓存的数组范围，所以还是得new，在堆中开辟地址空间
-  //
+  //Character类型也有缓存0-127
+  //Boolean类型也有两个缓存
+
+  Integer a1=1000;
+  int a2=1000;
+  System.out.println(a1==a2);//按照基本数据类型来比较
   ```
 
 ## 4.22 static关键字
@@ -1477,10 +1579,19 @@ class Bank{
   * 初始化类的信息
   * 一个类中有多个静态代码块，则按照声明的先后顺序执行
   * 静态代码块的执行先于非静态代码块
+* 类初始化方法体`<clinit>`的组成部分：
+  （1）静态类成员变量的显式赋值语句
+  （2）静态代码块中的语句
 * 非静态代码块
   * **随着对象的创建而执行，每创建一个对象，就执行一次非静态代码块**
-  * 可以在创建对象时，对对象的属性等进行初始化
+  * 可以在创建对象时，对对象的(非静态的实例属性)属性等进行初始化
   * 一个类中有多个非静态代码块，则按照声明的先后顺序执行
+* 实例初始化方法的方法体，由四部分构成(以下在编译时会组装成一个init方法)：
+  （1）super()或super(实参列表) 这里选择哪个，看原来构造器首行是哪句，没写，默认就是super()
+  （2）非静态实例变量的显示赋值语句
+  （3）非静态代码块
+  （4）对应构造器中的代码
+特别说明：其中（2）和（3）是按顺序合并的，（1）一定在最前面（4）一定在最后面
 * 非静态代码块可以调用静态的成员，也可调用非静态的成员
 * 静态代码块不能调用非静态的成员，只能调用静态的成员
 
@@ -1567,6 +1678,9 @@ Leaf的构造器
 
 >可以通过debug的方式调试代码的执行步骤，也能看出它们的执行顺序
 
+![代码块执行](../images/代码块.png)
+从上面的图可以看出，编译器将静态属性的显式初始化赋值和静态代码块放在一起，组成了clinit方法来执行
+
 * 示例2
 
 ```java
@@ -1646,6 +1760,94 @@ class Order{
 }
 ```
 
+* 示例4
+
+```java
+public class Test{
+    public static void main(String[] args){
+        Son s1 = new Son();
+        System.out.println("-----------------------------");
+        Son s2 = new Son("子类");
+    }
+}
+class Father{
+    private int a = getNumber();
+    private String info;
+    {
+        System.out.println("Father(1)");
+    }
+    Father(){
+        System.out.println("Father()无参构造");
+    }
+    Father(String info){
+        this.info = info;
+        System.out.println("Father(info)有参构造");
+    }
+    private int b = getNumber();
+    {
+        System.out.println("Father(2)");
+    }
+
+    public int getNumber(){
+        System.out.println("Father:getNumber()");
+        return 1;
+    }
+}
+class Son extends Father{
+    private int a = getNumber();
+    {
+        System.out.println("Son(1)");
+    }
+    private int b = getNumber();
+    {
+        System.out.println("Son(2)");
+    }
+    public Son(){
+        System.out.println("Son()：无参构造");
+    }
+    public Son(String info){
+        super(info);
+        System.out.println("Son(info)：有参构造");
+    }
+    public int getNumber(){
+        System.out.println("Son:getNumber()");
+        return 1;
+    }
+}
+```
+
+输出：
+
+```text
+Son:getNumber()
+Father(1)
+Son:getNumber()
+Father(2)
+Father()无参构造
+Son:getNumber()
+Son(1)
+Son:getNumber()
+Son(2)
+Son()：无参构造
+-----------------------------
+Son:getNumber()
+Father(1)
+Son:getNumber()
+Father(2)
+Father(info)有参构造
+Son:getNumber()
+Son(1)
+Son:getNumber()
+Son(2)
+Son(info)：有参构造
+```
+
+>这里第一行是执行了父类中的属性显式赋值，调用的是子类的`getNumber`，因为子类对该方法进行了重写，当前的this指向的是正在创建的对象，即Son，当然就调用子类中的`getNumber`
+
+* 代码块的作用：
+  1. 静态代码块：给(类变量)静态属性初始化赋值，也同时可能会进行读取配置文件等操作
+  2. 非静态代码块：给实例属性初始化赋值，也同时可能会进行读取配置文件等操作
+
 ## 4.24 final关键字
 
 * final:最终的
@@ -1718,6 +1920,7 @@ class Order{
   * 包含抽象方法的类，一定是抽象类；反之，抽象类不一定有抽象方法
   * 若子类重写了父类(包括间接父类)中的所有的抽象方法，此子类方可实例化；若子类没有重写父类(包括间接父类)中的所有的抽象方法，则此子类也是一个抽象类，需要使用abstract修饰
 * 抽象类是用于一个父类它本身不需要写太多东西，并且用abstract修饰其声明的方法，让子类去实现
+* 抽象类也可以是子类，其父类也可以是一个父类，所有的类默认继承`java.lang.Object`
 * abstract不能用来修饰：属性、构造器等
 * abstract不能用来修饰私有方法、静态方法、final修饰的方法(这种方法不能被重写)、final修饰的类(这种类不能被继承)
 
@@ -1923,7 +2126,6 @@ abstract class Plane implements Flyable{
 * 开发中，面向接口编程
 
 >抽象类和接口有哪些异同？
-  //todo
 
 * 创建接口的匿名实现类以及匿名实现类的匿名对象
   >与抽象类实现匿名子类以及匿名子类的匿名对象相似
@@ -1983,7 +2185,7 @@ class ProxyServer implements NetWork{
   2. 动态代理（动态生成代理类）
      JDK自带的动态代理，需要反射等知识
 
-## 2.27 内部类
+## 4.27 内部类
 
 * Java中允许将一个类A声明在另一个类B中，则类A就是内部类，类B称为外部类
 * 内部类的分类：成员内部类(静态、非静态)；局部内部类(方法内、代码块内、构造器内)
@@ -2067,3 +2269,223 @@ interface Comparable {
     public abstract void compareTo();
 }
 ```
+
+### 修饰符一起使用问题
+
+|           | 外部类 | 成员变量 | 代码块 | 构造器 | 方法 | 局部变量 |
+| --------- | ------ | -------- | ------ | ------ | ---- | -------- |
+| public    | √      | √        | ×      | √      | √    | ×        |
+| protected | ×      | √        | ×      | √      | √    | ×        |
+| private   | ×      | √        | ×      | √      | √    | ×        |
+| static    | ×      | √        | √      | ×      | √    | ×        |
+| final     | √      | √        | ×      | ×      | √    | √        |
+| abstract  | √      | ×        | ×      | ×      | √    | ×        |
+| native    | ×      | ×        | ×      | ×      | √    | ×        |
+
+不能和abstract一起使用的修饰符？
+
+（1）abstract和**final**不能一起修饰**方法和类**
+
+（2）abstract和**static**不能一起修饰**方法**
+
+（3）abstract和**native**不能一起修饰**方法**
+
+（4）abstract和**private**不能一起修饰**方法**
+
+static和final一起使用：
+
+（1）修饰方法：可以，因为都不能被重写
+
+（2）修饰成员变量：可以，表示静态常量
+
+（3）修饰局部变量：不可以，static不能修饰局部变量
+
+（4）修饰代码块：不可以，final不能修改代码块
+
+（5）修饰内部类：可以一起修饰成员内部类，不能一起修饰局部内部类
+
+## 4.28 枚举
+
+### 4.28.1 概述
+
+某些类型的对象是有限的几个，这样的例子举不胜举：
+
+* 星期：Monday(星期一)......Sunday(星期天)
+* 性别：Man(男)、Woman(女)
+* 月份：January(1月)......December(12月)
+* 季节：Spring(春节)......Winter(冬天)
+* 支付方式：Cash（现金）、WeChatPay（微信）、Alipay(支付宝)、BankCard(银行卡)、CreditCard(信用卡)
+* 员工工作状态：Busy（忙）、Free（闲）、Vocation（休假）
+* 订单状态：Nonpayment（未付款）、Paid（已付款）、Fulfilled（已配货）、Delivered（已发货）、Checked（已确认收货）、Return（退货）、Exchange（换货）、Cancel（取消）
+
+枚举类型本质上也是一种类，只不过是这个类的对象是固定的几个，而不能随意让用户创建。
+
+在JDK1.5之前，需要程序员自己通过特殊的方式来定义枚举类型。
+
+在JDK1.5之后，Java支持enum关键字来快速的定义枚举类型。
+
+### 4.28.2 JDK1.5之前
+
+在JDK1.5之前如何声明枚举类呢？
+
+* 构造器加private私有化
+* 本类内部创建一组常量对象，并添加public static修饰符，对外暴露这些常量对象
+
+示例代码：
+
+```java
+public class TestEnum {
+    public static void main(String[] args) {
+        Season spring = Season.SPRING;
+        System.out.println(spring);
+    }
+}
+class Season{
+    public static final Season SPRING = new Season();
+    public static final Season SUMMER = new Season();
+    public static final Season AUTUMN = new Season();
+    public static final Season WINTER = new Season();
+
+    private Season(){
+    }
+
+    public String toString(){
+        if(this == SPRING){
+            return "春";
+        }else if(this == SUMMER){
+            return "夏";
+        }else if(this == AUTUMN){
+            return "秋";
+        }else{
+            return "冬";
+        }
+    }
+}
+```
+
+### 4.28.3 JDK1.5之后
+
+语法格式：
+
+```java
+【修饰符】 enum 枚举类名{
+    常量对象列表
+}
+
+【修饰符】 enum 枚举类名{
+    常量对象列表;
+
+    其他成员列表;
+}
+```
+
+示例代码：
+
+```java
+public class TestEnum {
+    public static void main(String[] args) {
+        Season spring = Season.SPRING;
+        System.out.println(spring);
+    }
+}
+enum Season{
+    SPRING,SUMMER,AUTUMN,WINTER
+}
+```
+
+示例代码：
+
+```java
+public class TestEnum {
+    public static void main(String[] args) {
+        Season spring = Season.SPRING;
+        System.out.println(spring);
+    }
+}
+enum Season{
+    SPRING("春"),SUMMER("夏"),AUTUMN("秋"),WINTER("冬");
+    private final String description;
+
+    private Season(String description){
+        this.description = description;
+    }
+
+    public String toString(){//需要手动编写，无法使用Generate toString()...
+        return description;
+    }
+}
+```
+
+枚举类的要求和特点：
+
+* 枚举类的常量对象列表必须在枚举类的首行，因为是常量，所以建议大写。
+* 如果常量对象列表后面没有其他代码，那么“；”可以省略，否则不可以省略“；”。
+* 编译器给枚举类默认提供的是private的无参构造，如果枚举类需要的是无参构造，就不需要声明，写常量对象列表时也不用加参数，
+* 如果枚举类需要的是有参构造，需要手动定义private的有参构造，调用有参构造的方法就是在常量对象名后面加(实参列表)就可以。
+* 枚举类默认继承的是java.lang.Enum类，因此不能再继承其他的类型。
+* JDK1.5之后switch，提供支持枚举类型，case后面可以写枚举常量名。
+* 枚举类型如有其它属性，建议（**不是必须**）这些属性也声明为final的，因为常量对象在逻辑意义上应该不可变。
+
+* 用enum声明的枚举类型，不能用extends其他类型，因为它有一个默认的直接父类java.lang.Enum
+
+### 4.28.4 枚举类型常用方法
+
+```java
+1.toString(): 默认返回的是常量名（对象名），可以继续手动重写该方法！
+2.name():返回的是常量名（对象名） 【很少使用】
+3.ordinal():返回常量的次序号，默认从0开始
+4.values():返回该枚举类的所有的常量对象，返回类型是当前枚举的数组类型，是一个静态方法
+5.valueOf(String name)：根据枚举常量对象名称获取枚举对象
+```
+
+示例代码：
+
+```java
+public class TestEnum {
+    public static void main(String[] args) {
+        Season[] values = Season.values();
+        for (int i = 0; i < values.length; i++) {
+        switch(values[i]){
+            case SPRING:
+                System.out.println(values[i]+":春暖花开，万物复苏");
+                break;
+            case SUMMER:
+                System.out.println(values[i]+":百花争艳，郁郁葱葱");
+                break;
+            case AUTUMN:
+                System.out.println(values[i]+":菊桂飘香，百树凋零");
+                break;
+            case WINTER:
+                System.out.println(values[i]+":梅花独开，大地一色");
+                break;
+            }
+        }
+    }
+}
+enum Season{
+    SPRING,SUMMER,AUTUMN,WINTER
+}
+```
+
+## 4.29 注解
+
+* Java内置的三个注解：
+  1. `@SuppressWarnings`
+   使用位置：在类、方法、变量等上面都可以，凡是需要抑制警告的地方都可以使用
+   作用：抑制警告（不一定报错）
+  2. `@Override`
+   使用位置：子类重写父类的成员方法时
+   作用：表示该方法为重写的方法
+  3. `@Deprecated`：
+  使用位置：在类、方法、变量等上面都可以
+  作用：表示该类、方法、变量已经废弃，有更好的选择
+
+* 元注解
+  1. @Target
+  2. @Retention
+    标记该注解的生命周期
+    RetenionPolicy.SOUCE:在源代码中可见，执行编译后就
+    RetenionPolicy.CLASS:
+    RetenionPolicy.RUNTIME:
+  3. @Documented
+  4. @Inherited

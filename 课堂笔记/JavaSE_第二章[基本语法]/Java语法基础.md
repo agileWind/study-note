@@ -103,6 +103,15 @@
 | **特殊值**                         |
 | true                               | false      | null   |            |          |  |
 
+基本数据类型：byte,short,int,long,float,double,char,boolean
+流程控制语句：if,else,switch,case,default,while,for,do,break,continue,return
+声明类：class
+创建对象：new
+权限修饰：public,protected,private
+返回值：void
+特殊值：true,false,null
+包：import,package
+
 ## 3.3 保留字
 
 * java保留字，现在没有用，但是以后的版本可能会用，goto、const
