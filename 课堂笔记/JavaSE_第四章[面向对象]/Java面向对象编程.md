@@ -1168,6 +1168,9 @@ Object[] obj4=new int[5];//错误，编译不通过，int是基本数据类型�
 
 * `protected Object clone()`
 
+  * 因为该方法修饰符是protected，子类想拥有该方法，让其子类实例化对象被克隆，需要重写该方法，放大其权限范围
+  * 重写了Object的clone()后，该类还需要实现Cloneable接口才能使用该clone()方法
+
     ```java
     Person p=new Person();
     p.age=12;
@@ -1359,6 +1362,27 @@ public String toString(){
 ## 4.20 单元测试
 
 ### Junit单元测试
+
+* junit测试类必须是public类
+* 测试方法本身必须是public修饰的
+* 测试方法返回值类型是void
+* 测试方法是无参的
+* 测试方法不能是静态的
+
+```java
+public class JunitTest{
+    @Test
+    public void methodTest(){
+
+    }
+}
+```
+
+* `@Before`:在每个测试方法@Test执行之前都要执行
+* `@After`:在每个测试方法@Test执行之前都要执行
+* `@BeforeClass`:方法得使用static修饰，在类初始化(类加载)时运行，在所有的@Before和@Test之前运行，且只运行一次
+* `@AfterClass`:方法得使用static修饰，在所有的@Test和@After之后运行，且只运行一次
+
 
 //todo ,idea怎么写单元测试
 
@@ -2069,6 +2093,18 @@ abstract class BankTemplateMethod{
   8. Java类可以实现多个接口，弥补了Java单继承的局限性
      格式：`class AA extends BB implements CC,DD,EE`
 
+>为什么要新增静态方法，和默认方法
+>
+> 1. 静态方法是为接口提供工具方法，通过`类名.static方法`无法调用，只能通过实现类的对象来调用，这一点和子类调用父类的静态方法不同
+> 2. 如果接口需要新增方法，那么所有得实现类都需要去实现该新增方法，这工作量可能很大，默认方法是子类可选的实现方法，即可以不重写
+
+* 实现类调用接口中的默认方法
+  `接口名.super.方法`
+
+* 如果实现类继承了父类又实现了接口，且父类和接口中有同名的成员属性，则需要显式写明是调用的哪个
+  调用父类的属性：`super.成员属性`
+  调用接口的属性：`接口名.成员属性`   //接口只有静态属性
+
 ```java
 interface Flyable{
     //全局常量
@@ -2184,6 +2220,221 @@ class ProxyServer implements NetWork{
   1. 静态代理（静态定义代理类）
   2. 动态代理（动态生成代理类）
      JDK自带的动态代理，需要反射等知识
+
+### Comparable接口的使用
+
+* 像String、包装类等实现了Comparable接口，重写了compareTo(obj)方法，给出了笔记两个对象大小的方式
+* 像String、包装类重写了compareTo()方法以后，进行了从小到达的排列
+* 重写compareTo(obj)的规则：
+  1. 如果当前对象this大于形参对象obj，则返回正整数
+  2. 如果当前对象this小于形参对象obj，则返回负整数
+  3. 如果当前对象this等于形参对象obj，则返回零
+* 也称自然排序
+
+```java
+public class CompareTest {
+    public static void main(String[] args) {
+        Goods[] arr = new Goods[4];
+        arr[0] = new Goods("联想笔记本", 4999.90);
+        arr[1] = new Goods("华为手机", 5199.99);
+        arr[2] = new Goods("小米手机", 2199.99);
+        arr[3] = new Goods("戴尔电脑", 4359.90);
+        System.out.println(MyArrays.toString(arr));
+        MyArrays.sort(arr);
+        System.out.println(MyArrays.toString(arr));
+
+        //直接用java.util.Arrays也可
+        //System.out.println(Arrays.toString(arr));
+        //Arrays.sort(arr);
+        //System.out.println(Arrays.toString(arr));
+    }
+}
+
+//排序工具类
+class MyArrays {
+    public static void sort(Object[] objects) {//冒泡排序
+        for (int i = objects.length; i > 0; i--) {
+            boolean isOrder = true;
+            for (int j = 1; j < i; j++) {
+                Comparable comparable1 = (Comparable) objects[j - 1];
+                if (comparable1.compareTo(objects[j]) > 0) {
+                    Object temp = objects[j - 1];
+                    objects[j - 1] = objects[j];
+                    objects[j] = temp;
+                    isOrder = false;
+                }
+            }
+            if (isOrder) {
+                return;
+            }
+        }
+    }
+
+    public static String toString(Object[] arr) {
+        StringBuilder stringBuilder = new StringBuilder("[");
+        for (int i = 0; i < arr.length; i++) {
+            stringBuilder.append(arr[i].toString());
+            if (i != arr.length - 1) {
+                stringBuilder.append(", ");
+            }
+        }
+        return String.valueOf(stringBuilder.append("]"));
+    }
+}
+
+//商品类
+class Goods implements Comparable {
+    public String name;
+    public double price;
+
+    public Goods(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Goods otherGoods = (Goods) o;
+        return Double.compare(this.price, otherGoods.price);
+    }
+
+    @Override
+    public String toString() {
+        return "Goods{" +
+                "name='" + name + '\'' +
+                ", price=" + price +
+                '}';
+    }
+}
+
+```
+
+### Comparator接口的使用
+
+* 当元素的类型没有实现java.lang.Comparable接口而不方便修改代码，或者实现了Comparable接口的排序规则不适合当前的操作，那么可以考虑使用Comparator的对象进行排序，强行堆多个对象进行整体排序
+* 重写`compare(Object o1,Object o2)`方法，比较o1与o2的大小，如果方法返回正整数,则表示o1大于o2；如果返回0,表示相等；如果返回负整数，表示o1小于o2
+* 可以将Comparator传递给排序方法中，比如`sort(Object[] arr,Comparator cmp)`
+* 还可以使用Comparator来控制某些数据结构的顺序，比如给集合类的对象提供排序
+
+```java
+public class ComparatorTest {
+    public static void main(String[] args) {
+        Goods[] arr = new Goods[4];
+        arr[0] = new Goods("联想笔记本", 4999.90);
+        arr[1] = new Goods("华为手机", 5199.99);
+        arr[2] = new Goods("小米手机", 2199.99);
+        arr[3] = new Goods("戴尔电脑", 4359.90);
+        //comparable自然排序
+        //System.out.println(MyArrays.toString(arr));
+        //MyArrays.sort(arr);
+        //System.out.println(MyArrays.toString(arr));
+        //直接用java.util.Arrays也可
+        //System.out.println(Arrays.toString(arr));
+        //Arrays.sort(arr);
+        //System.out.println(Arrays.toString(arr));
+
+        //comparator定制排序
+        Comparator comparator=new GoodsComparator();
+        System.out.println(MyArrays.toString(arr));
+        MyArrays.sort(arr,comparator);
+        System.out.println(MyArrays.toString(arr));
+        //直接用java.util.Arrays也可
+        //System.out.println(Arrays.toString(arr));
+        //Arrays.sort(arr,comparator;
+        //System.out.println(Arrays.toString(arr));
+    }
+}
+
+//排序工具类
+class MyArrays {
+    public static void sort(Object[] objects) {//冒泡排序
+        for (int i = objects.length; i > 0; i--) {
+            boolean isOrder = true;
+            for (int j = 1; j < i; j++) {
+                Comparable comparable1 = (Comparable) objects[j - 1];
+                if (comparable1.compareTo(objects[j]) > 0) {
+                    Object temp = objects[j - 1];
+                    objects[j - 1] = objects[j];
+                    objects[j] = temp;
+                    isOrder = false;
+                }
+            }
+            if (isOrder) {
+                return;
+            }
+        }
+    }
+
+    public static void sort(Object[] objects, Comparator comparator) {//冒泡排序
+        for (int i = objects.length; i > 0; i--) {
+            boolean isOrder = true;
+            for (int j = 1; j < i; j++) {
+                Comparable comparable1 = (Comparable) objects[j - 1];
+                if (comparator.compare(objects[j - 1], objects[j]) > 0) {
+                    Object temp = objects[j - 1];
+                    objects[j - 1] = objects[j];
+                    objects[j] = temp;
+                    isOrder = false;
+                }
+            }
+            if (isOrder) {
+                return;
+            }
+        }
+    }
+
+    public static String toString(Object[] arr) {
+        StringBuilder stringBuilder = new StringBuilder("[");
+        for (int i = 0; i < arr.length; i++) {
+            stringBuilder.append(arr[i].toString());
+            if (i != arr.length - 1) {
+                stringBuilder.append(", ");
+            }
+        }
+        return String.valueOf(stringBuilder.append("]"));
+    }
+}
+
+//商品类
+class Goods implements Comparable {
+    public String name;
+    public double price;
+
+    public Goods(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        Goods otherGoods = (Goods) o;
+        return Double.compare(this.price, otherGoods.price);
+    }
+
+    @Override
+    public String toString() {
+        return "Goods{" +
+                "name='" + name + '\'' +
+                ", price=" + price +
+                '}';
+    }
+}
+
+//定制的商品价格比较类，从大到小
+class GoodsComparator implements Comparator {
+
+    @Override
+    public int compare(Object o1, Object o2) {
+        if (o1 instanceof Goods && o2 instanceof Goods) {
+            Goods goods1 = (Goods) o1;
+            Goods goods2 = (Goods) o2;
+            return -Double.compare(goods1.price, goods2.price);
+        } else {
+            throw new RuntimeException("数据类型不一致");
+        }
+    }
+}
+```
 
 ## 4.27 内部类
 
@@ -2489,3 +2740,4 @@ enum Season{
     RetenionPolicy.RUNTIME:
   3. @Documented
   4. @Inherited
+//todo
