@@ -12,11 +12,13 @@
   * 当对字符串重新赋值时，需要重新指定内存区域赋值，不能使用原有的avlue进行赋值
   * 当对现有的字符串进行连接操作时，也需要重新指定内存区域赋值，不是在原有位置附加
   * 当调用String的replace()方法修改指定字符或子字符串时，也需要重新指定内存区域赋值，不是在原有位置修改
-* String对象的字符内容是存储在一个字符数组`final char value[]`内
+* String对象的字符内容是存储在一个常量字符数组`private final char value[]`内，且String类里面不提供方法去修改私有的常量数组
 * String实现了Serializable接口，表示字符串是支持序列化的
 * String实现了Comparable接口，表示字符串是可以比较大小的
 * 通过字面量的方式(区别于new String("字符串"))给一个字符串赋值，此时的字符串值声明在字符串常量池中
 * 字符串常量池中是不会存储相同内容的字符串的
+
+> JDK1.9之前是char value[],jdk1.9后改成了byte value[]
 
 ```java
 public class StringTest {
@@ -73,19 +75,72 @@ String s9="hello"+s8;//因为s8是常量，所以存储在常量池，s9也就�
 System.out.println(s0==s9);//true
 ```
 
+```java
+public class StringTest {
+    public static void main(String[] args) {
+        String s1 = "hello";
+        String s2 = new String("he") + new String("llo");
+
+        String s = s2.intern();//s==s1,true
+        System.out.println(s2 == s);//false
+    }
+}
+```
+
+```java
+public class StringTest {
+    public static void main(String[] args) {
+        String s2 = new String("he") + new String("llo");
+
+        String s = s2.intern();
+        System.out.println(s2 == s);//true
+    }
+}
+```
+
 * **常量与常量的拼接结果在常量池**，且常量池中不会存相同内容的常量
 * **只要拼接中有一个是变量，结果就在堆中**
 * 如果拼接的结果调用`intern()`方法,返回值就在常量池中
 
-* String类的常用方法
-  1. d
-  2. d
-  3. d
-  4. d
-  5. d
-  6. d
-  7. d
-  8. d
+#### String类的常用方法
+
+ > 通过查看String源码可知String类的所有常用方法
+
+* 获取
+  1. `int length()`获取长度
+  2. `char charAt(int index)`:根据位置index来获取位置上的某个字符，index范围[0,length-1]
+  3. 根据字符(串)获取该字符(串)在字符串中的位置(存在则返回index,不存在则是-1):
+      * `int indexOf(int ch)`:返回的是ch在字符串中从左到右第一次出现的位置
+      * `int indexOf(int ch,int fromIndex)`:获取ch在字符串中，从fromIndex位置开始，从左到右第一次出现的位置
+      * `int indexOf(String str)`:返回的是str在字符串中第一次出现的位置
+      * `int indexOf(String str,int fromIndex)`:从fromIndex指定位置开始，从左到右，获取str在字符串中出现的位置
+      * `int lastIndexOf(int ch)`:从右到左，返回ch在字符串中第一次出现的位置
+      * `int lastIndexOf(int ch,int fromIndex)`:从fromIndex开始，从右到左，返回ch在字符串中第一次出现的位置
+      * `int lastIndexOf(String str)`:从右到左，返回ch在字符串中第一次出现的位置
+      * `int lastIndexOf(String str,int fromIndex)`:从fromIndex开始，从右到左，返回ch在字符串中第一次出现的位置
+
+* 判断
+  1. `boolean contains(String str)`:字符串中是否包含某一个子串
+  2. `boolean isEmpty()`:字符串中是否有内容
+  3. `boolean startsWith(String str)`:字符串是否是以指定内容开头
+  4. `boolean endsWith(String str)`:字符串是否是以指定内容结尾
+  5. `boolean equals(String str)`:判断字符串内容是否相同。重写了Object类中的equals()方法
+  6. `boolean equalsIgnoreCase(String str)`:忽略大小写时，判断字符串内容是否相同
+
+* 替换
+  1. `String replace(char oldChar,char newChar)`:将字符串中的字符oldChar全部替换成newChar
+* 切割
+  1. `String[] split(String regex)`:按照正则或者字符(串)来分割整个字符串，如`"abcdabca".split("a")`结果是`["bcd","bc"]`
+* 子串
+  1. `String substring(int beginIndex)`:从位置beginIndex开始，一直到字符串结束，获取这个范围的字符子串，子串下标的范围是[beginIndex,length-1]
+  2. `String substring(int beginIndex,int endIndex)`:从位置beginIndex开始，一直到位置endIndex结束(但不包括位置endIndex)，获取这个范围的字符子串，子串下标的范围是[beginIndex,endIndex-1]
+* 转换
+  1. `String toUpperCase()`:将字符串中的字母全部转成大写
+  2. `String toLowerCase()`:将字符串中的字母全部转成小写
+* 去除空格
+  1. `String trim()`:去除字符串两端的空格，返回新串
+* 自然排序（String类实现了Comparable接口）
+  1. `int compareTo(String str)`:对两个字符串进行自然排序的比较
 
 #### Java正则表达式
 
@@ -122,10 +177,6 @@ try {
 }
 ```
 
-#### 字符串模式匹配算法
-
-//todo两个字符串的最大相同字串
-
 ### 7.1.2 StringBuffer与StringBuilder
 
 * String:不可变的字符序列，底层使用char[]存储
@@ -141,7 +192,11 @@ StringBuffer strBuffer2=new StringBuffer("abc");//会开辟16+3=19个字符的�
 * 效率对比：从高到低，`StringBuilder`>`StringBuffer`>`String`
 
 * StringBuffer的常用方法：
-  类中的增删改查插
+  1. `append(String/char str)`:字符串附加连接
+  2. `toString()`:返回字符串内容相同的String类型对象
+  3. `setCharAt(int index,char ch)`:将下标为index的位置字符替换为新的字符ch
+  4. `insert(int offset,String/char str)`:在指定位置之前插入字符(串)
+  5. `delete(int startIndex,int endIndex)`:删除起始位置(包含)到结尾位置(不包含)之间的字符串
 
 ## 7.2 时间日期类
 
@@ -161,14 +216,14 @@ StringBuffer strBuffer2=new StringBuffer("abc");//会开辟16+3=19个字符的�
 
 * sql.Date(子类)转util.Date(父类):直接赋值，向上转型是自动的
 
-  ````java
+  ```java
   java.sql.Date date1=new java.sql.Date(11111111111L);
   java.util.Date date2=date1;
   ```
 
 * util.Date(父类)转sql.Date(子类):通过时间戳作为转换
 
-  ````java
+  ```java
   java.util.Date date1=new java.util.Date();
   long currentTime=date1.getTime();
   java.sql.Date date2=new java.sql.Date(currentTime);
@@ -359,6 +414,8 @@ public class DateTimeFormatterTest {
   2. void exit(int status):传入参数0代表正常退出，非0表示异常退出
   3. void gc():请求系统进行垃圾回收，但至于是否回收，取决于系统
   4. String getProperty(String key):获取系统中属性为Key的属性对应的值
+
+### 数学计算
 
 BigInteger不可变的任意大小的整数
 

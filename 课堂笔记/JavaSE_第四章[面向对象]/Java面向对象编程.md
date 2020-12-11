@@ -1383,9 +1383,6 @@ public class JunitTest{
 * `@BeforeClass`:方法得使用static修饰，在类初始化(类加载)时运行，在所有的@Before和@Test之前运行，且只运行一次
 * `@AfterClass`:方法得使用static修饰，在所有的@Test和@After之后运行，且只运行一次
 
-
-//todo ,idea怎么写单元测试
-
 ## 4.21 包装类的使用
 
 * 针对8种基本数据类型定义相应的引用类型---包装类(封装类)
@@ -2340,7 +2337,7 @@ public class ComparatorTest {
         System.out.println(MyArrays.toString(arr));
         //直接用java.util.Arrays也可
         //System.out.println(Arrays.toString(arr));
-        //Arrays.sort(arr,comparator;
+        //Arrays.sort(arr,comparator);
         //System.out.println(Arrays.toString(arr));
     }
 }
@@ -2444,6 +2441,11 @@ class GoodsComparator implements Comparator {
   * 作为外部类的成员：可以调用外部类的结构;可以被static修饰;可以被4种权限修饰
   * 作为一个类，可以定义属性、方法、构造器等；可以被继承；可以被final修饰；可以被abstract修饰
 * 对于静态成员内部类，通过`外部类.内部类`方式来使用；非静态的成员内部类，需要外部类进行实例化后，以对象使用属性的方式访问内部类，内部类实例化
+* 在内部类中，只能直接使用外部类的静态成员
+* 非静态内部类里面不能声明静态成员
+* 局部内部类没有静态的，也无法被权限修饰符修饰
+* 局部内部类只有final ，abstract这两个词修饰
+* 局部内部类无法在外部类的其他成员中使用
 
 ```java
 public class InnerClassTest {
@@ -2454,24 +2456,26 @@ public class InnerClassTest {
 
         //非静态的成员内部类
         Person p = new Person();
-        Person.Bird bird = p.new Bird();
+        Person.Bird bird = p.new Bird("3");
+
+        Comparable comparable=p.getCompareable();
+        comparable.compareTo();//在外面使用局部内部类的方法：让局部内部类继承一个父类或者实现一个接口，然后局部内部类重写需要调用的方法
     }
 }
 
 class Person {
-    String name;
+    static String name = "2";
     int age;
 
     public void eat() {
         System.out.println("person ,eat");
     }
 
-    //非成员内部类
-    class Bird {
-        String name;
+    public class Bird {
+        String name = "1";
 
-        public Bird() {
-
+        public Bird(String name) {
+            System.out.println(Person.name);
         }
 
         public void sing() {
@@ -2498,17 +2502,28 @@ class Person {
         }
     }
 
-    {
+    static {//静态代码块
         //局部内部类
-        class B {
+        /*static */
+        class B {//局部内部类没有静态的
+
+        }
+    }
+
+    public void method(){
+        /*static*/ class A{//局部内部类
 
         }
     }
 
     public Comparable getCompareable() {
+        int i=1;
+        //局部内部类
         return new Comparable() {
             @Override
             public void compareTo() {
+                //i=2;//报错,在局部内部类中使用方法体的局部变量，则变量自动变成了final
+                System.out.println(i);//局部内部类中只能使用外部类方法体中的final局部变量
                 System.out.println("在方法里新建了匿名内部类(它是一个接口的实现)的匿名对象");
             }
         };
@@ -2520,6 +2535,96 @@ interface Comparable {
     public abstract void compareTo();
 }
 ```
+
+```java
+public class Test{
+    public static void main(String[] args) {
+        //静态内部类的静态成员直接使用
+        System.out.println(Outer.Inner2.age);
+        Outer.Inner2.innerMethod2();
+
+        //静态内部类的非静态成员需要静态内部类实例化后使用
+        Outer.Inner2 inner2=new Outer.Inner2();
+        System.out.println(inner2.name);
+        inner2.innerMethod();
+
+        //非静态内部类必须实例化后才能使用非静态成员
+        //非静态内部类里面不能声明静态成员
+        Outer outer=new Outer();
+        Outer.Inner inner=outer.new Inner();
+        System.out.println(inner.name);
+        inner.innerMethod();
+
+    }
+}
+
+class Outer{
+    String name;
+    static int age;
+    class  Inner{
+        String name;
+        //static int age;//错误，非静态内部类不能有静态成员属性
+
+        public void innerMethod(){
+            System.out.println(name);
+            System.out.println(Outer.age);
+            //外部类的非静态成员无法直接使用，必须实例化外部类后使用
+            Outer outer=new Outer();
+            System.out.println(outer.name);
+        }
+        //public static void innerMethod2(){}//错误，非静态内部类不能有静态成员方法
+    }
+    public static void outMethod1(){
+        //new Outer.Inner();//外部类的静态方法不能使用非静态内部类
+        Outer outer=new Outer();
+        Outer.Inner inner= outer.new Inner();//正确
+        inner.innerMethod();
+
+        Inner2.innerMethod2();//直接使用静态内部类的静态方法
+        System.out.println(Inner2.age);//直接使用静态内部类的静态属性
+        Inner2 inner2=new Inner2();
+        inner2.innerMethod();//静态内部类的非静态方法使用之前，静态内部类需要先实例化
+        System.out.println(inner2.name);//静态内部类的非静态属性使用之前，静态内部类需要先实例化
+
+    }
+
+    public void outMethod2(){
+        Inner inner=new Inner();//正确，因为外部类的非静态方法可以使用非静态内部类
+        inner.innerMethod();
+
+        //外部类的非静态方法调用静态内部类是允许的
+        //静态内部类的静态成员直接调用：内部类名.静态成员
+        //静态内部类的非静态成员需要内部类实例化调用：new 静态内部类名().非静态成员
+    }
+
+    static class Inner2{
+        String name;
+        static int age;
+        public void innerMethod(){
+            System.out.println(name);
+            System.out.println(Outer.age);
+            //外部类的非静态成员无法直接使用，必须实例化外部类后使用
+            Outer outer=new Outer();
+            System.out.println(outer.name);
+        }
+        public static void innerMethod2(){
+
+        }
+    }
+}
+```
+
+### 匿名类
+
+* 匿名(内部)类需要在声明之时就实例化，不然之后就无法实例化了，因为它没有名字
+  格式：
+
+  ```java
+  new 父类/接口(参数列表){
+      @Override
+      //子类重写父类/实现接口的方法
+  }
+  ```
 
 ### 修饰符一起使用问题
 
@@ -2630,6 +2735,8 @@ class Season{
 }
 ```
 
+* 此时枚举类默认继承了java.lang.Enum
+
 示例代码：
 
 ```java
@@ -2689,6 +2796,56 @@ enum Season{
 5.valueOf(String name)：根据枚举常量对象名称获取枚举对象
 ```
 
+### 4.28.5枚举类型实现接口
+
+```java
+public class EnumTest {
+    public static void main(String[] args) {
+        Season[] seasons=Season.values();
+        for(int i=0;i<seasons.length;i++){
+            seasons[i].show();
+        }
+    }
+}
+
+enum Season implements Info{
+    SPRING("春天","出暖花开"){
+        @Override
+        public void show(){
+            System.out.println("春天踏青");
+        }
+    },
+    SUMMER("夏天","夏日炎炎"){
+        @Override
+        public void show(){
+            System.out.println("夏天去冲浪");
+        }
+    },AUTUMN("秋天","秋高气爽"){
+        @Override
+        public void show(){
+            System.out.println("秋天收粮食");
+        }
+    },
+    WINTER("冬天","寒风凌冽"){
+        @Override
+        public void show(){
+            System.out.println("冬天滑雪");
+        }
+    };
+
+    String name;
+    String desc;
+    Season(String name, String desc){
+        this.name=name;
+        this.desc=desc;
+    }
+}
+
+interface Info{
+    void show();
+}
+```
+
 示例代码：
 
 ```java
@@ -2732,12 +2889,18 @@ enum Season{
   作用：表示该类、方法、变量已经废弃，有更好的选择
 
 * 元注解
-  1. @Target
-  2. @Retention
-    标记该注解的生命周期
+  1. @Target：标识该注解能够修饰的结构（注解的程序元素）
+  2. @Retention：标记该注解的生命周期
     RetenionPolicy.SOUCE:在源代码中可见，执行编译后就
-    RetenionPolicy.CLASS:
-    RetenionPolicy.RUNTIME:
-  3. @Documented
-  4. @Inherited
-//todo
+    RetenionPolicy.CLASS:默认行为，在执行时不会被加载到虚拟机中
+    RetenionPolicy.RUNTIME:在运行时该注解也会被加载
+  3. @Documented：表示所修饰的注解在被javadoc解析时能够识别保留到文档中，默认不保留
+  4. @Inherited：指明如果父类有该注解，子类将继承该注解
+
+* 类的注解可以通过反射来获取到注解信息
+* JDK8.0的新特性：
+  1. 支持重复注解
+     多了个元注解@Repeatable,成员值为支持多注解的自定义注解
+  2. 类型注解
+     ElementType.TYPE_PARAMETER,表示该注解能够写在类型变量的声明语句中(如，泛型声明)
+     ElementType.TYPE_USE,表示该注解能写在使用类型的任何语句中
