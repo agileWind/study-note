@@ -1,23 +1,10 @@
 public class Test {
-
-
-
     public static void main(String[] args) {
-    
-    MyAr ma = new MyAr();
-    
-    ma.method();
-    
+        Integer a=45;
+        Integer c=new Integer(45);
+        int b=45;
+        System.out.println(a==b);
+        System.out.println(b==c);
+        System.out.println(a==c);
     }
-    
-    
-    
-    public void method() {
-    
-    static int i;
-    
-    System.out.println(i);
-    
-    }
-    
-    }
+}
