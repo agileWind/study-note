@@ -749,7 +749,7 @@ class Person implements Serializable{
 
 * 也称随机存取文件流
 * RandomAccessFile直接继承于java.lang.Object类，实现了DataInput和DataOutput接口
-* RandomAccessFile既可以作为一个输入流，又可以作为衣蛾输出流
+* RandomAccessFile既可以作为一个输入流，又可以作为一个输出流
 * 如果RandomAccessFile作为输出流，写出到的文件如果不存在，则在执行过程中自动创建；如果写出到的文件存在，则会对原有文件内容进行覆盖(默认情况下，从头覆盖)
 * 可以通过相关的操作，实现RandomAccessFile“插入”数据的效果
 

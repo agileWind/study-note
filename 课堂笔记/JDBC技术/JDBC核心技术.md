@@ -1120,63 +1120,121 @@ filters=wall
 ### 测试数据库连接
 
 ```java
+package com.suftz.db.junit;
+
+import com.suftz.db.MyConnection;
 import org.junit.Test;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 public class MyConnectionTest {
 
     @Test
     public void _getConnectionByC3P0Test() {
+        Connection conn=null;
         try {
-            System.out.println(MyConnection._getConnectionByC3P0());
+            conn=MyConnection._getConnectionByC3P0();
+            System.out.println(conn);
             //com.mchange.v2.c3p0.impl.NewProxyConnection@6e276e [wrapping: com.mysql.cj.jdbc.ConnectionImpl@1a5f194]
         } catch (Exception e) {
             e.printStackTrace();
+        }finally{
+            try {
+                if(conn!=null){
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Test
     public void getConnectionByC3P0Test() {
+        Connection conn=null;
         try {
-            System.out.println(MyConnection.getConnectionByC3P0());
+            conn=MyConnection.getConnectionByC3P0();
+            System.out.println(conn);
             //com.mchange.v2.c3p0.impl.NewProxyConnection@6e276e [wrapping: com.mysql.cj.jdbc.ConnectionImpl@1a5f194]
+            conn.close();
         } catch (SQLException e) {
             e.printStackTrace();
+        }finally{
+            try {
+                if(conn!=null){
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Test
     public void _getConnectionByDBCP(){
+        Connection conn=null;
         try{
-            System.out.println(MyConnection._getConnectionByDBCP());
+            conn=MyConnection._getConnectionByDBCP();
+            System.out.println(conn);
             //26205593, URL=jdbc:mysql://localhost:3306/booksys?characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai, MySQL Connector Java
         }catch(Exception e){
             e.printStackTrace();
+        }finally {
+            try {
+                if(conn!=null){
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Test
     public void getConnectionByDBCPTest(){
+        Connection conn=null;
         try{
-            System.out.println(MyConnection.getConnectionByDBCP());
+            conn=MyConnection.getConnectionByDBCP();
+            System.out.println(conn);
             //26205593, URL=jdbc:mysql://localhost:3306/booksys?characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai, MySQL Connector Java
         }catch(SQLException e){
             e.printStackTrace();
+        }finally {
+            try {
+                if(conn!=null){
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     @Test
     public void getConnectionByDruid(){
+        Connection conn=null;
         try{
-            System.out.println(MyConnection.getConnectionByDruid());
+            conn=MyConnection.getConnectionByDruid();
+            System.out.println(conn);
             //com.alibaba.druid.proxy.jdbc.ConnectionProxyImpl@15e586c
         }catch(SQLException e){
             e.printStackTrace();
+        }finally{
+            try {
+                if(conn!=null){
+                    conn.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
 ```
+
+> 数据库连接池使用后，一定要关闭。在不关闭已申请使用的资源前提下，再去请求获取连接池资源时，当超出连接数后，则会报错抛异常
+> 可以测试，循环取出100个(大于设置的连接数即可)数据库连接：1.反复取出，但是每次都关闭连接(等同于放回)；2.每次取出，且不关闭连接(等同于一直持有连接)。这两种方式产生效果不同，后者会抛异常
 
 ## Apache-DBUtils实现CRUD操作
 
@@ -1593,6 +1651,14 @@ public class MyConnectionTest {
               userDao.getUsers(conn).forEach(System.out::println);
           } catch (SQLException e) {
               e.printStackTrace();
+          }finally {
+              try {
+                  if(conn!=null){
+                      conn.close();
+                  }
+              } catch (SQLException e) {
+                  e.printStackTrace();
+              }
           }
       }
 
@@ -1605,6 +1671,14 @@ public class MyConnectionTest {
               userDao.addUser(conn,user);
           }catch(SQLException e){
               e.printStackTrace();
+          }finally {
+              try {
+                  if(conn!=null){
+                      conn.close();
+                  }
+              } catch (SQLException e) {
+                  e.printStackTrace();
+              }
           }
       }
 
@@ -1616,6 +1690,14 @@ public class MyConnectionTest {
               userDao.deleteUserById(conn,200);
           }catch(SQLException e){
               e.printStackTrace();
+          }finally {
+              try {
+                  if(conn!=null){
+                      conn.close();
+                  }
+              } catch (SQLException e) {
+                  e.printStackTrace();
+              }
           }
       }
 
@@ -1624,9 +1706,17 @@ public class MyConnectionTest {
           Connection conn=null;
           try{
               conn=MyConnection.getConnectionByDruid();
-              System.out.println(userDao.getUserById(conn, 112));
+              System.out.println(userDao.getUserById(conn, 111111));
           }catch(SQLException e){
               e.printStackTrace();
+          }finally {
+              if(conn!=null){
+                  try {
+                      conn.close();
+                  } catch (SQLException e) {
+                      e.printStackTrace();
+                  }
+              }
           }
       }
 
@@ -1641,6 +1731,14 @@ public class MyConnectionTest {
               userDao.updateUser(conn,user);
           }catch(Exception e){
               e.printStackTrace();
+          }finally {
+              try {
+                  if(conn!=null){
+                      conn.close();
+                  }
+              } catch (SQLException e) {
+                  e.printStackTrace();
+              }
           }
       }
 
@@ -1655,6 +1753,14 @@ public class MyConnectionTest {
               System.out.println(userDao.getPageUsers(conn, page));
           } catch (SQLException e) {
               e.printStackTrace();
+          }finally {
+              try {
+                  if(conn!=null){
+                      conn.close();
+                  }
+              } catch (SQLException e) {
+                  e.printStackTrace();
+              }
           }
       }
   }
