@@ -722,13 +722,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-/**
- * Description:
- *
- * @author zhangchengy
- * @version 1.0
- * @date 2020/12/16 19:22
- */
 public class ProxyTest {
     @Test
     /**静态代理测试*/

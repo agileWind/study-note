@@ -733,6 +733,7 @@ struts.handle.exception=true
   3. redirect：重定向到一个Action
   4. redirectAction：重定向到一个Action,注意：通过redirect的方式也可以便捷的实现redirectAction的功能
 
+     ```xml
      <result name="index" type="chain">
         <param name="actionName">testAction</param>
         <param name="namespace">/hello</param>
@@ -1932,13 +1933,13 @@ struts.handle.exception=true
 * ObjectStack里会将相关对象，特别是Action类的实例压入栈中，可以通过debug标签看到栈中的Action对象各种属性，但是前提是，action对象中各属性有getXxx方法，才能获取到对象的属性
 
 * Action对象放入值栈中的时间点
-  1. 在创建StrutsActionPropxy对象时，等创建StrutsActinProxy对象之后，对其进行初始化时，把Action对象放入了值栈中
+  1. 在创建StrutsActionPropxy对象时，等创建StrutsActionProxy对象之后，对其进行初始化时，把Action对象放入了值栈中
      ![Action对象被放入值栈的时间](images/Action对象被放入值栈的时间.png)
   2. 那Action对象属性的值是什么时间点放入的呢，可以给Action类中的setXxx方法添加debug断点，看看执行的顺序，从debug栈中可以看出，如下：
      ![Action对象属性被赋值的时间](images/Action对象属性被赋值的时间.png)
 
-  3. 也就是说，是通过在拦截器栈中的拦截器时，来进行赋值操作：
-     `<interceptor name="actionMappingParams" class="org.apache.struts2.interceptor.ActionMappingParametersInteceptor"/>`
+  3. 也就是说，是通过在拦截器栈中下列的拦截器时，来进行赋值操作：
+     `<interceptor name="params" class="com.opensymphony.xwork2.interceptor.ParametersInterceptor"/>`
 
 ### url标签
 
@@ -2051,7 +2052,7 @@ struts.handle.exception=true
   </s:else>
   ```
 
-## iterator标签
+### iterator标签
 
 * iterator标签用来遍历一个数组，Collection或一个Map,并把这个可遍历对象里的每一个元素一次压入和弹出ValueStack栈
 
@@ -2095,7 +2096,7 @@ struts.handle.exception=true
   </table>
   ```
 
-## sort标签
+### sort标签
 
 * 可以对一个可遍历对象里的元素进行排序
 
@@ -2129,3 +2130,1635 @@ struts.handle.exception=true
 </s:sort>
 </table>
 ```
+
+### date标签
+
+* 可以对Date对象进行排版
+
+```xml
+<%
+    request.setAttribute("date",new Date());
+%>
+<s:date name="#request.date" format="yyyy-MM-dd hh:mm:ss" var="date2" />
+date:${date2}
+```
+
+> date2变量是放在contextMap栈中
+
+### a标签
+
+<s:a href="user/save.action?name=%{name}&age=%{age}">保存${name}</s:a>
+
+* 使用`%{}`把属性包装起来，使其进行强制的OGNL解析
+
+### 表单标签
+
+* struts中的表单标签在被转换为html文档后，和普通表单是一样的功能
+* 但是使用struts2表单标签可以进行数据回显，因为form提交表单后，原本是会刷新当前页面，如果想回到当前页面，则需要后台处理请求后跳回当前页面，但是表单上的数据由于刷新的原因都不存在了，在jsp中，如果需要回显，可以将回显数据写入到域对象中，然后在form表单中以value属性值来显示。在struts使用表单标签后，自动会回显数据，十分方便
+* struts表单回显数据的原理：从栈顶对象开始匹配属性，并把匹配的属性值赋给form表单中对应的value中，若栈顶对象没有对应的属性，则依次向下找相对应的属性
+  > 如果提交数据的请求操作后，在后端对数据进行修改，则回显的数据就不与发送前的数据一致了
+
+### checkbox标签
+
+* 传统的`<input type="checkbox" name="" value="">`是有不足之处的，当用户没有勾选此复选框时，浏览器不会收集该项参数的键值对结果提交。如果有一个参数，是以一个复选框的是否选中作为结果，比如选中为true,未选中为false,可是form标签里，未选中不会提交结果
+  > 使用js来获取勾选情况，然后也可以判断用户是否勾选了，然后附带上这个参数值
+* struts中的checkbox标签解决了这个局限性，它采取的办法是：为单个复选框元素创建一个配对的不可见字段
+* 比如jsp代码中：`<s:checkbox name="admin" label="是否管理员" />`，输出到浏览器页面上，是这样的：
+
+  ```xml
+  <input type="checkbox" name="admin" value="true" checked="checked" id="save_admin">
+  <input type="hidden" id="__checkbox_save_admin" name="__checkbox_admin" value="true"> <label for="save_admin" class="checkboxLabel">是否管理员</label>
+  ```
+
+* 当勾选了复选框后，此时请求参数中，会有两个与“是否管理员”相关的参数，分别是name="admin"和name="__checkbox_admin"这两个input,当后端收到两个参数时，则会将ActionUser对象的amin属性设置为true；如果没有勾选复选框，则请求参数中，只有name="__checkbox_admin"的input的参数值被提交，后端只收到一个请求参数值，则会将ActionUser对象的amin属性设置为false
+
+* checkbox 标签有一个 fieldValue 属性, 该属性指定的值将在用户提交表单时作为被选中的单选框的实际值发送到服务器. 如果没有使用 fieldValue 属性, 单选框的值将为 true 或 false
+
+### list,listKey,listValue
+
+* 即在`<s:checkboxlist>`和`<s:radio>`标签中,可以使用这三个属性实现单选框或者复选框功能
+* 可以把一个 String, 一个数组, 一个 Enumeration(枚举), Iterator(迭代器), Map 或 Collection 赋给 list 属性
+* 使用了该属性后的标签一定要有name属性，不然会报错
+* 示例：
+
+    ```xml
+    <%
+        List<Product> list=new ArrayList<>();
+        list.add(new Product("pro001","2kg"));
+        list.add(new Product("pro002","5.2kg"));
+        list.add(new Product("pro003","1.2kg"));
+        request.setAttribute("proinfos",list);
+    %>
+    <s:form action="save" method="post">
+        <s:textfield label="用户名" name="name" /><br>
+        <s:password label="密码" name="password" showPassword="true" /><br>
+        <s:textfield name="age" label="年龄" /><br>
+        <s:textarea name="profile" label="介绍" />
+        <s:checkbox name="admin" label="是否管理员" />
+        <s:checkbox name="info" label="info" fieldValue="好人" />
+        <s:submit type="submit" value="提交" />
+        <s:checkboxlist list="#request.proinfos" listKey="id" listValue="weight" name="pros" label="物品重量"/>
+        <s:radio list="#{'0':'male','1':'female'}" label="性别" name="gender"></s:radio>
+    </s:form>
+    ```
+
+* 在`<s:select>`中使用list示例如下：
+
+  ```java
+  <s:select list="{11,12,13,14,15,16,17,18}"
+            headerKey=""
+            headerValue="请选择"
+            name="age"
+            label="Age">
+  <s:optgroup label="19-25" list="#{19:19,20:20,21:21,22:22,23:23,24:24,25:25}"></s:optgroup>
+  <s:optgroup label="26-30" list="#{26:26,27:27,28:28,29:29,30:30}"></s:optgroup>
+  </s:select>
+  ```
+
+
+* radio标签是一组单选按钮，单选按钮的个数与程序员通过该标签的list属性提供的选项的个数相同
+* 一般地，使用radio标签实现“多选一”，对于“真/假”则该使用checkbox标签
+
+  |名字|数据类型|默认值|说明|
+  |:----|:----|:----|:----|
+  |list|String||用来充当选项来源的可遍历对象|
+  |listKey|String||用来提供选项值的对象属性|
+  |listValue|String||用来提供选项行标的对象属性|
+
+* select标签用来呈现一个select元素
+
+  |名字|数据类型|默认值|说明|
+  |:----|:----|:----|:----|
+  |emptyOption|boolean|false|指明是否要在标题下面插入一个空白选项|
+  |headerKey|String||选项列表中的第一个选项的键|
+  |headerValue|String||选项列表的第一个选项的值|
+  |list|String||用来充当选项来源的可遍历对象|
+  |listKey|String||用来提供选项值的对象属性|
+  |listValue|String||用来提供选项行标的对象属性|
+  |multiple|boolean||指明是否允许多重选择(多选多)|
+  |size|integer||同时显示在页面里的选项的个数|
+
+* optgroup标签对select元素所提供的选项进行分组，每个选项有它自己的来源
+
+  |名字|数据类型|默认值|说明|
+  |:----|:----|:----|:----|
+  |list|String||用来充当选项来源的可遍历对象|
+  |listKey|String||用来提供选项值的对象属性|
+  |listValue|String||用来提供选项行标的对象属性|
+
+* checkboxlist标签将呈现一组多选框
+
+  |名字|数据类型|默认值|说明|
+  |:----|:----|:----|:----|
+  |list|String||用来充当选项来源的可遍历对象|
+  |listKey|String||用来提供选项值的对象属性|
+  |listValue|String||用来提供选项行标的对象属性|
+
+## ModelDriven 和 Preparable 拦截器
+
+### Struts2运行流程分析
+
+* 一个请求在Struts2中的处理大概可以分为以下几个步骤：
+  1. 首先客户端浏览器发送一个请求（HttpServletRequest）。
+  2. 接着程序会调用 StrutsPrepareAndExecuteFilter，然后询问 ActionMapper 这个请求是否需要调用某个 Action(即是否返回一个非空的 ActionMapping 对象)
+  3. 如果 ActionMapper 决定需要调用某个 Action，StrutsPrepareAndExecuteFilter 会把请求的处理交给 ActionProxy。
+  4. ActionProxy 通过配置管理器（Configuration Manager）从配置文件（struts.xml）中读取框架的配置信息，从而找到需要调用的 Action 类。
+  5. ActionProxy 会创建一个 ActionInvocation 的实例。
+  6. ActionInvocation 使用命名模式调用 Action，在调用 Action 前，会依次调用所有配置的拦截器（Intercepter1、Intercepter2……）。
+  7. 一旦 Action 执行完，则返回结果字符串，ActionInvocation 就会负责查找结果字符串对应的 Result，然后执行这个 Result。通常情况下 Result 会调用一些模板（JSP 等）呈现页面。
+  8. 产生的 Result 信息返回给 ActionInvocation，在此过程中拦截器会被再次执行（顺序与 Action 执行之前相反）。
+  9. 最后产生一个 HttpServletResponse 的响应行为，通过 StrutsPrepareAndExecuteFilter 反馈给客户端。
+
+* 运行图示如下：
+  ![Struts2的执行流程](images/Struts2的执行流程.gif)
+
+> ActionProxy 是 Action 的一个代理类，也就是说Action的调用是通过 ActionProxy 实现的，其实就是调用了ActionProxy.execute()方法，而该方法又调用了ActionInvocation.invoke()方法
+> ActionInvocation就是Action的调用者。ActionInvocation在Action的执行过程中，负责Interceptor、Action和Result等一系列元素的调度。
+
+### Params拦截器
+
+* params 拦截器将把表单字段映射到 ValueStack 栈的栈顶对象的各个属性中. 如果某个字段在模型里没有匹配的属性, Params 拦截器将尝试 ValueStack 栈中的下一个对象
+* 这一点在上面也有提到过：params拦截器在struts-default.xml中可以看到其配置：
+  `<interceptor name="params" class="com.opensymphony.xwork2.interceptor.ParametersInterceptor"/>`
+  params拦截器的类是ParametersInterceptor，从源代码可以知，它继承自MethodFilterInterceptor
+* 从下图中具体了解Params拦截器的工作原理：
+![ParametersInterceptor拦截器作用](images/ParametersInterceptor拦截器作用.png)
+
+### ModelDriven
+
+#### Action与Model分开的必要性
+
+* 必要性：
+  通过前面的struts使用，可以了解到，表单提交的参数数据都会被最终注入到值栈中能匹配到的相关属性上，而作为处理类Action,也会被在创建StrutsActionProxy对象之后，将action对象放入到栈顶中，所以如果想在处理时，很方便的获取请求的参数信息，可以在处理的Action对象中声明一些属性，并且对应的需要声明setXxx方法，以便Params拦截器注入参数
+  但是这样做，也会十分麻烦，那这样处理，如果有保存的业务，则每个数据都要声明属性，且有set方法，这就成了一个javaBean，但是Action类是作为处理业务而存在的，不应该和Model混在一起
+  > 当然，在处理类中，可以通过调用ActionContext或者继承一些接口等方式来获取请求参数，但多多少少还是会耦合，而且，Struts本来就有注入参数到值栈的过程，自己又去获取一遍请求数据的参数信息，这是不合理的，如果已经定义了一个JavaBean，那么此时Action里面又要完整再写一遍JavaBean中的代码
+
+* 在使用 Struts 作为前端的企业级应用程序时把 Action 和 Model 清晰地隔离开是有必要的: 有些 Action 类不代表任何Model 对象, 它们的功能仅限于提供显示服务，或者进行业务处理
+
+#### ModelDriven原理
+
+* 如果 Action 类实现了 ModelDriven 接口，该拦截器将把 ModelDriven 接口的 getModel() 方法返回的对象置于栈顶
+* 当用户触发 add 请求时, ModelDriven 拦截器将调用 Action 对象的 getModel方法, 并把返回的模型(Employee实例)压入到 ValueStack 栈.接下来 Parameters 拦截器将把表单字段映射到 ValueStack 栈的栈顶对象的各个属性中. 因为此时 ValueStack 栈的栈顶元素是刚被压入的JavaBean对象, 所以该bean对象将被填充. 如果某个字段在模型里没有匹配的属性, Param 拦截器将尝试 ValueStack 栈中的下一个对象
+
+* 从默认的拦截器栈defaultStack看出各拦截器的执行顺序，其中modelDriven拦截器在params拦截器上面，而modelDrvien拦截器会去判断Action对象是否实现了ModelDriven接口，如果是其实现，则会转型为ModelDriven对象，然后调用getModel方法来获取一个javaBean对象，并将该对象压入值栈顶
+* 下面是ModelDrivenInterceptor拦截器的intercept方法：
+
+  ```java
+    public String intercept(ActionInvocation invocation) throws Exception {
+        //获取Action对象，因为在DefaultStrutsProxy对象创建的时候，就初始化创建了一个Action对象，并压入值栈顶
+        Object action = invocation.getAction();
+        //判断action是否是ModelDriven的实例
+        if (action instanceof ModelDriven) {
+            //强转为ModelDriven类型
+            ModelDriven modelDriven = (ModelDriven) action;
+            //获取值栈
+            ValueStack stack = invocation.getStack();
+            //通过调用getModel方法获取一个对象
+            Object model = modelDriven.getModel();
+            if (model !=  null) {
+                //压入值栈顶
+                stack.push(model);
+            }
+            /**这个参数的作用是重新执行一次action中的getModel方法，把action中最新的模型对象压入栈顶，
+             * 为什么会有这种需要?
+             * 可能在执行业务方法时，在方法体里面，new了一个模型对象，现在action对象中的模型对象属性已经被更新了，而值栈中还是旧的.此变量默认是false
+             */
+            if (refreshModelBeforeResult) {
+                invocation.addPreResultListener(new RefreshModelBeforeResult(modelDriven, model));
+            }
+        }
+        //执行下一个拦截器
+        return invocation.invoke();
+    }
+  ```
+
+* UserAction类示例：
+
+  ```java
+  package com.suftz.day03;
+
+  import com.opensymphony.xwork2.ModelDriven;
+  import org.apache.struts2.interceptor.RequestAware;
+
+  import java.util.Map;
+
+  public class UserAction implements RequestAware, ModelDriven<User> {
+
+      private UserDao userDao=new UserDao();
+      private Map<String,Object> request;
+
+      User user;
+
+      public String add() {
+          userDao.save(user);
+          return "success";
+      }
+
+      public String list(){
+          this.request.put("users",userDao.getUsers());
+          return "success";
+      }
+
+      public String delete() {
+          userDao.delete(user.getUid());
+          return "success";
+      }
+
+      public String update() {
+          return "success";
+      }
+
+      public String get() {
+          return "success";
+      }
+
+      @Override
+      public void setRequest(Map<String, Object> request) {
+          this.request=request;
+      }
+
+      @Override
+      public User getModel() {
+          /**
+           * 这里不能写成了return new User(),这样写的话，虽然返回了一个模型对象到值栈顶，
+           * 但是与当前UserAction对象没有进行绑定，UserAction对象直接使用属性user则会是为空，
+           * 除非每个业务方法又去调用另外的方法获取值栈，并获取值栈的栈顶对象
+           */
+          user=new User();
+          return user;
+      }
+  }
+  ```
+
+* 仅仅是这样写仍然存在一些问题，从编辑用户信息来考虑，编辑的时候需要编辑页面上能够回显数据：
+   1. 将查到的user数据写到request域中，然后jsp页面上通过value="${requestScope.user.属性获取}进行回显" ； 缺点：值栈已经有一个User对象了，除了uid属性，其他的属性都为空；struts的form标签有回显数据的功能
+   2. 由于值栈中已经有一个通过getModel方法而获取到的User对象，则可以通过给该对象设置属性，调用各属性的setXxx方法，充分利用值栈中的对象；  缺点：如果属性很多，就需要很多setXxx
+   3. 将查询到的user对象，直接压入到值栈顶；   缺点：没有利用值栈已有的User对象，除非先自己先操作值栈，弹出栈顶的User对象，这样不安全，虽然操作值栈很简单
+   4. 通过在method为get方法中配置refreshModelBeforeResult=true
+   5. 可以通过改写getModel()方法来解决：如果能根据不同的请求，进行不同的返回对象逻辑，当为add，update时，则返回一个新的User对象，如果是get，delete则直接使用数据库查出来的User对象返回,其实list方法不需要model
+      * 怎么区分它们呢：请求为add,update方法时前端会传很多参数;请求为get,delete方法时前端只传了uid;请求为list方法时前端没有传参数
+      * add方法，前端不会传uid;
+      * 但是通过查看defaultStack默认拦截器栈可知，modelDriven拦截器在params拦截器前面，也就是说，执行modelDriven拦截器时，请求参数还没注入到值栈的目标对象中，那怎么获取到这些参数的传递情况？
+        解决：修改action使用的拦截器栈，不使用defaultStack拦截器栈，改用paramsPrepareParamsStack拦截器栈
+
+* 代码全部如下：
+  1. UserAction类
+
+     ```java
+     package com.suftz.day03;
+
+
+     import com.opensymphony.xwork2.ModelDriven;
+     import com.opensymphony.xwork2.Preparable;
+     import org.apache.struts2.interceptor.RequestAware;
+
+     import java.util.Map;
+
+     public class UserAction implements RequestAware, ModelDriven<User>{
+
+         private UserDao userDao=new UserDao();
+         private Map<String,Object> request;
+
+         private User user;
+         private Integer uid;
+
+         public void setUid(Integer uid) {
+             this.uid = uid;
+         }
+
+         public String add() {
+             userDao.save(user);
+             return "success";
+         }
+
+         public String list(){
+             this.request.put("users",userDao.getUsers());
+             return "success";
+         }
+
+         public String delete() {
+             userDao.delete(uid);
+             return "success";
+         }
+
+         public String update() {
+             userDao.update(user);
+             return "success";
+         }
+
+         public String get() {
+             /**
+              * 这个方法不能写成user=userDao.get(this.user.getUid());这样只是改变了当前UserAction对象中的user属性，但是值栈中的user对象各属性仍没有改变
+              * */
+     //        User user=userDao.get(this.user.getUid());
+     //        this.user.setAddress(user.getAddress());
+     //        this.user.setAge(user.getAge());
+     //        this.user.setEmail(user.getEmail());
+     //        this.user.setInfo(user.getInfo());
+     //        this.user.setName(user.getName());
+     //        this.user.setPassword(user.getPassword());
+             return "success";
+         }
+
+         @Override
+         public void setRequest(Map<String, Object> request) {
+             this.request=request;
+         }
+
+         @Override
+         public User getModel() {
+             if(uid==null){
+                 user=new User();
+             }else{
+                 user=userDao.get(uid);
+             }
+             return user;
+         }
+     }
+     ```
+
+  2. 两个jsp页面如下：
+
+       list.jsp
+
+        ```xml
+        <%@ taglib prefix="s" uri="/struts-tags" %>
+        <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+        <html>
+        <head>
+            <title>员工信息展示</title>
+            <base href="<%=request.getContextPath()%>/">
+        </head>
+        <body>
+        <s:form action="user/add" method="POST" >
+            <s:textfield name="name" label="姓名" />
+            <s:password name="password" label="密码" />
+            <s:textfield name="age" label="年龄" />
+            <s:textfield name="address" label="地址" />
+            <s:textfield name="email" label="邮箱" />
+            <s:textarea name="info" label="信息" />
+            <s:submit />
+        </s:form>
+        <table border="1px solid #eeeeee" cellspacing="0" cellpadding="5">
+            <thead>
+            <tr>
+                <td>编号</td>
+                <td>姓名</td>
+                <td>密码</td>
+                <td>年龄</td>
+                <td>地址</td>
+                <td>邮箱</td>
+                <td>信息</td>
+                <td colspan="2">操作</td>
+            </tr>
+            </thead>
+            <tbody>
+            <s:iterator value="#request.users">
+                <tr>
+                    <td>${uid}</td>
+                    <td>${name}</td>
+                    <td>${password}</td>
+                    <td>${age}</td>
+                    <td>${address}</td>
+                    <td>${email}</td>
+                    <td>${info}</td>
+                    <td><a href="user/get?uid=${uid}">修改</a></td>
+                    <td><a href="user/delete?uid=${uid}">删除</a></td>
+                </tr>
+            </s:iterator>
+            </tbody>
+        </table>
+
+        <s:debug />
+        </body>
+        </html>
+        ```
+
+        edit.jsp
+
+        ```xml
+        <%@ taglib prefix="s" uri="/struts-tags" %>
+        <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+        <html>
+        <head>
+            <title>员工信息修改</title>
+            <base href="<%=request.getContextPath()%>/">
+        </head>
+        <body>
+        <s:form action="user/update" method="POST" >
+            <s:hidden name="uid" />
+            <s:textfield name="name" label="姓名" />
+            <s:password name="password" label="密码" showPassword="true" />
+            <s:textfield name="age" label="年龄" />
+            <s:textfield name="address" label="地址" />
+            <s:textfield name="email" label="邮箱" />
+            <s:textarea name="info" label="信息" />
+            <s:submit />
+        </s:form>
+
+
+        <s:debug />
+        </body>
+        </html>
+        ```
+
+  3. struts.xml
+
+     ```xml
+     <?xml version="1.0" encoding="UTF-8"?>
+
+     <!DOCTYPE struts PUBLIC
+             "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+             "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+     <struts>
+
+         <constant name="struts.action.extension" value="action,do,"></constant>
+         <package name="user" namespace="/user" extends="struts-default">
+             <default-interceptor-ref name="paramsPrepareParamsStack" />
+             <action name="list" class="com.suftz.day03.UserAction" method="list">
+                 <result name="success">/WEB-INF/day03/list.jsp</result>
+             </action>
+             <action name="delete" class="com.suftz.day03.UserAction" method="delete">
+                 <result name="success" type="redirectAction">
+                     <param name="actionName">list</param>
+                     <param name="namespace">/user</param>
+                 </result>
+             </action>
+             <action name="add" class="com.suftz.day03.UserAction" method="add">
+                 <result name="success" type="redirectAction">
+                     <param name="actionName">list</param>
+                     <param name="namespace">/user</param>
+                 </result>
+             </action>
+             <action name="get" class="com.suftz.day03.UserAction" method="get">
+                 <result name="success" type="dispatcher">/WEB-INF/day03/edit.jsp</result>
+     <!--            <interceptor-ref name="modelDriven">-->
+     <!--                <param name="refreshModelBeforeResult">true</param>-->
+     <!--            </interceptor-ref>-->
+             </action>
+             <action name="update" class="com.suftz.day03.UserAction" method="update">
+                 <result name="success" type="redirectAction">
+                     <param name="actionName">list</param>
+                     <param name="namespace">/user</param>
+                 </result>
+             </action>
+         </package>
+
+     </struts>
+     ```
+
+* 现在的代码仍然是有问题的(get√,list×,update√,save√,delete×)：
+  1. 在执行delete删除操作时，uid不为空，但是却将数据库中的对象加载到值栈中，这是不必要的做法
+  2. 在执行list操作时，uid为空，但是list操作不需要向值栈中压入空的User对象
+  > update是正确的，因为前端可能只需要修改一部分属性，没有传所有的属性值，只传了要修改的属性值，先将数据库中的对象加载到栈顶，然后params拦截器再注入进去
+
+#### Preparable拦截器
+
+* Struts 2.0 中的 modelDriven 拦截器负责把 Action 类以外的一个对象压入到值栈栈顶
+而 prepare 拦截器负责准备为 getModel() 方法准备 model
+
+* 若Action实现了Preparable接口，需要重写prepare方法。
+* 程序运行时Struts将尝试执行`prepare[ActionMethodName]`方法,
+  若`prepare[ActionMethodName]`不存在，则将尝试执行`prepareDo[ActionMehodName]`方法，
+  若都不存在，就都不执行
+  示例解释：如果action name="save",则此时Preparable拦截器会尝试执行prepareSave方法或者prepareDoSave方法
+
+* 若PrepareInterceptor对象的alwaysInvokePrepare属性为false,则Struts2将不会钓鱼实现了Preparable接口的Action的prepare方法
+
+* Preparable拦截器源码分析(只看关键处代码)：
+
+  ```java
+  public String doIntercept(ActionInvocation invocation) throws Exception {
+      Object action = invocation.getAction();
+
+      if (action instanceof Preparable) {
+          try {
+              String[] prefixes;
+              //判断是先去找prepareMethod方法还是去找prepareDoMethod方法
+              if (firstCallPrepareDo) {
+                  //这两个常量分别是prepare,prepareDo
+                  prefixes = new String[] {ALT_PREPARE_PREFIX, PREPARE_PREFIX};
+              } else {
+                  prefixes = new String[] {PREPARE_PREFIX, ALT_PREPARE_PREFIX};
+              }
+              //这里会去判断action里面是否有prepare,prepareDo方法，尝试执行
+              PrefixMethodInvocationUtil.invokePrefixMethod(invocation, prefixes);
+          }
+          catch (InvocationTargetException e) {
+              /*
+               * The invoked method threw an exception and reflection wrapped it
+               * in an InvocationTargetException.
+               * If possible re-throw the original exception so that normal
+               * exception handling will take place.
+               */
+              Throwable cause = e.getCause();
+              if (cause instanceof Exception) {
+                  throw (Exception) cause;
+              } else if(cause instanceof Error) {
+                  throw (Error) cause;
+              } else {
+                  /*
+                   * The cause is not an Exception or Error (must be Throwable) so
+                   * just re-throw the wrapped exception.
+                   */
+                  throw e;
+              }
+          }
+            //当拦截器中的参数alwaysInvokePrepare=true才执行
+          if (alwaysInvokePrepare) {
+              ((Preparable) action).prepare();
+          }
+      }
+
+      return invocation.invoke();
+  }
+  ```
+
+  在PrefixMethodInvocationUtil类中静态方法invokePrefixMethod、getPrefixedMethod如下：
+
+  ```java
+  public static void invokePrefixMethod(ActionInvocation actionInvocation, String[] prefixes) throws InvocationTargetException, IllegalAccessException {
+      //获取action对象
+      Object action = actionInvocation.getAction();
+      //获取此次请求action对象中处理的方法
+      String methodName = actionInvocation.getProxy().getMethod();
+
+      if (methodName == null) {
+          // if null returns (possible according to the docs), use the default execute
+          //如果没有配置method，则去执行execute,下面常量就是"execute"
+          methodName = DEFAULT_INVOCATION_METHODNAME;
+      }
+      //获取前缀方法
+      Method method = getPrefixedMethod(prefixes, methodName, action);
+      if (method != null) {
+          //执行前缀方法
+          method.invoke(action, new Object[0]);
+      }
+  }
+
+  public static Method getPrefixedMethod(String[] prefixes, String methodName, Object action) {
+      assert(prefixes != null);
+      //把方法的名字首字母换成大写字母，即如果方法是update,则返回Update
+      String capitalizedMethodName = capitalizeMethodName(methodName);
+      for (String prefixe : prefixes) {//如果找不到prepareXxx,则去找prepareDoXxx
+          //前缀方法是由前缀字符串和方法名拼接起来，即格式如prepareUpdate
+          String prefixedMethodName = prefixe + capitalizedMethodName;
+          try {
+              return action.getClass().getMethod(prefixedMethodName, EMPTY_CLASS_ARRAY);
+          }
+          catch (NoSuchMethodException e) {
+              // hmm -- OK, try next prefix
+              if (LOG.isDebugEnabled()) {
+                  LOG.debug("cannot find method [#0] in action [#1]", prefixedMethodName, action.toString());
+              }
+          }
+      }
+      return null;
+  }
+  ```
+
+* 在介绍ModelDriven拦截器时，那时的代码是有问题的。现在可以根据Prepare拦截器解决，思路如下：
+  1. 可以为每一个actionMethod准备`prepare[ActionMethodName]`方法，而抛弃原来的prepare方法
+  2. 将PrepareInterceptor的alwaysInvokePrepare属性设置为false,以避免Struts2再调用prepare方法
+
+* 修改代码如下：
+  1. 修改UserAction类如下：
+
+     ```java
+     package com.suftz.day03;
+
+
+     import com.opensymphony.xwork2.ModelDriven;
+     import com.opensymphony.xwork2.Preparable;
+     import org.apache.struts2.interceptor.RequestAware;
+
+     import java.util.Map;
+
+     public class UserAction implements RequestAware, ModelDriven<User>, Preparable {
+
+         private UserDao userDao=new UserDao();
+         private Map<String,Object> request;
+
+         private User user;
+         private Integer uid;
+
+         public void setUid(Integer uid) {
+             this.uid = uid;
+         }
+
+         public String add() {
+             userDao.save(user);
+             return "success";
+         }
+
+         public String list(){
+             this.request.put("users",userDao.getUsers());
+             return "success";
+         }
+
+         public String delete() {
+             userDao.delete(uid);
+             return "success";
+         }
+
+         public String update() {
+             userDao.update(user);
+             return "success";
+         }
+
+         public String get() {
+             return "success";
+         }
+
+         @Override
+         public void setRequest(Map<String, Object> request) {
+             this.request=request;
+         }
+
+         @Override
+         public User getModel() {
+             return user;
+         }
+
+         public void prepareAdd(){
+             user=new User();
+         }
+
+         public void prepareGet(){
+             user=userDao.get(uid);
+         }
+
+         public void prepareUpdate(){
+             user=userDao.get(uid);
+         }
+
+         @Override
+         public void prepare() throws Exception {
+         }
+     }
+     ```
+
+  2. 修改struts.xml配置如下：
+
+     ```xml
+     <?xml version="1.0" encoding="UTF-8"?>
+
+     <!DOCTYPE struts PUBLIC
+             "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+             "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+     <struts>
+
+         <constant name="struts.action.extension" value="action,do,"></constant>
+         <package name="user" namespace="/user" extends="struts-default">
+     <!--        修改PrepareInterceptor拦截器的alwaysInvokePrepare属性值为false-->
+             <interceptors>
+                 <interceptor-stack name="suftzstack">
+                     <interceptor-ref name="paramsPrepareParamsStack">
+                         <param name="prepare.alwaysInvokePrepare">false</param>
+                     </interceptor-ref>
+                 </interceptor-stack>
+             </interceptors>
+             <default-interceptor-ref name="suftzStack" />
+             <action name="list" class="com.suftz.day03.UserAction" method="list">
+                 <result name="success">/WEB-INF/day03/list.jsp</result>
+             </action>
+             <action name="delete" class="com.suftz.day03.UserAction" method="delete">
+                 <result name="success" type="redirectAction">
+                     <param name="actionName">list</param>
+                     <param name="namespace">/user</param>
+                 </result>
+             </action>
+             <action name="add" class="com.suftz.day03.UserAction" method="add">
+                 <result name="success" type="redirectAction">
+                     <param name="actionName">list</param>
+                     <param name="namespace">/user</param>
+                 </result>
+             </action>
+             <action name="get" class="com.suftz.day03.UserAction" method="get">
+                 <result name="success" type="dispatcher">/WEB-INF/day03/edit.jsp</result>
+             </action>
+             <action name="update" class="com.suftz.day03.UserAction" method="update">
+                 <result name="success" type="redirectAction">
+                     <param name="actionName">list</param>
+                     <param name="namespace">/user</param>
+                 </result>
+             </action>
+         </package>
+
+     </struts>
+     ```
+
+## 类型转换
+
+### 类型转换概述
+
+* 从一个 HTML 表单到一个 Action 对象, 类型转换是从字符串到非字符串.
+  HTTP 没有 “类型” 的概念. 每一项表单输入只可能是一个字符串或一个字符串数组. 在服务器端, 必须把 String 转换为特定的数据类型
+* 在 struts2 中, 把请求参数映射到 action  属性的工作由 Parameters 拦截器负责, 它是默认的 defaultStack 拦截器中的一员. Parameters 拦截器可以自动完成字符串和基本数据类型之间转换.
+
+### 类型转换出错处理
+
+* 如果类型转换失败:
+  * 若 Action 类没有实现 ValidationAware 接口： Struts 在遇到类型转换错误时仍会继续调用其 Action 方法, 就好像什么都没发生一样.
+  * 若 Action 类实现 ValidationAware 接口：Struts 在遇到类型转换错误时将不会继续调用其 Action 方法:  Struts 将检查相关 action 元素的声明是否包含着一个 name=input 的 result.  如果有, Struts 将把控制权转交给那个 result  元素; 若没有 input 结果, Struts 将抛出一个异常
+
+#### 转到哪个页面
+
+* 如果是第一种方式，即没有实现ValidationAware接口，比如表单元素input标签name="age",在服务器端是Integer类型，如果类型转换错误，则保持的值是该类型的属性的初始化默认值，即0
+* 如果是第二种方式，需要配置struts.xml文件如下：
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+
+  <!DOCTYPE struts PUBLIC
+          "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+          "http://struts.apache.org/dtds/struts-2.3.dtd">
+
+  <struts>
+
+      <constant name="struts.action.extension" value="action,do,"></constant>
+      <package name="user" namespace="/user" extends="struts-default">
+          <interceptors>
+              <interceptor-stack name="suftzstack">
+                  <interceptor-ref name="paramsPrepareParamsStack">
+                      <param name="prepare.alwaysInvokePrepare">false</param>
+                  </interceptor-ref>
+              </interceptor-stack>
+          </interceptors>
+          <default-interceptor-ref name="suftzstack" />
+          <action name="list" class="com.suftz.day03.UserAction" method="list">
+              <result name="success">/WEB-INF/day03/list.jsp</result>
+          </action>
+          <action name="delete" class="com.suftz.day03.UserAction" method="delete">
+              <result name="success" type="redirectAction">
+                  <param name="actionName">list</param>
+                  <param name="namespace">/user</param>
+              </result>
+          </action>
+          <action name="add" class="com.suftz.day03.UserAction" method="add">
+              <result name="success" type="redirectAction">
+                  <param name="actionName">list</param>
+                  <param name="namespace">/user</param>
+              </result>
+              <!--数据转换错误后，会执行该result,在页面上会显示错误信息-->
+              <result name="input">/WEB-INF/day03/list.jsp</result>
+          </action>
+          <action name="get" class="com.suftz.day03.UserAction" method="get">
+              <result name="success" type="dispatcher">/WEB-INF/day03/edit.jsp</result>
+          </action>
+          <action name="update" class="com.suftz.day03.UserAction" method="update">
+              <result name="success" type="redirectAction">
+                  <param name="actionName">list</param>
+                  <param name="namespace">/user</param>
+              </result>
+              <!--数据转换错误后，会执行该result,在页面上会显示错误信息-->
+              <result name="input">/WEB-INF/day03/edit.jsp</result>
+          </action>
+      </package>
+
+  </struts>
+  ```
+
+  > Action类继承ActionSupport类即可，因为父类已实现了ValidationAware接口
+  >会在异常处理的页面上显示错误信息，比如 Invalid field value for field "age"
+
+#### 显示错误信息
+
+* 作为默认的 default 拦截器的一员, ConversionError 拦截器负责添加与类型转换有关的出错消息(前提: Action 类必须实现了 ValidationAware 接口)和保存各请求参数的原始值.
+* 若字段标签使用的不是 simple 主题, 则非法输入字段将导致一条有着以下格式的出错消息:
+  Invalid field value for field "age"
+* 覆盖默认的出错消息
+  在对应的 Action 类所在的包中新建  ActionClassName.properties 文件, ClassName 即为包含着输入字段的 Action 类的类名
+  例如：在UserAction类的同目录下建一个UserAction.properties文件，内容有：
+  `invalid.fieldvalue.age=\u65e0\u6548\u7684\u6570\u5b57`
+
+* 定制出错消息的样式:
+每一条出错消息都被打包在一个 HTML span 元素里, 可以通过覆盖其行标为 errorMessage 的那个 css 样式来改变出错消息的格式
+* 显示错误消息: 如果是 simple 主题, 可以通过 `<s:fielderror fieldName=“fieldname”></s:fielderror>` 标签显示错误消息
+
+* 如果使用simple主题，想修改默认的页面，则可以在src下新建一个包template.simple，里面新建一个fielderror.ftl文件，这个文件可以参考struts默认的fielderror.ftl文件内容，然后修改样式或者页面元素
+
+### 自定义类型转换器
+
+* 如果需要把字符串转换成其他引用型数据类型，则Struts不会自动完成
+  比如：前端浏览器发送的日期字符串转换成Date类型
+
+* 定义类型转换器：
+  1. 开发类型转换器的类：扩展StrutsTypeConverter类
+  2. 配置类型转换器：
+     * 基于字段的配置：
+       在字段所在的Model(可能是Action,可能是一个JavaBean)的包下，新建一个ModelClassName-conversion.properties
+       在该文件中输入键值对：fieldName=类型转换器的全类名
+       第一次使用该转换器时创建实例，单例模式
+     * 基于类型的配置：
+       在src下新建xwork-conversion.properties
+       键入：待转换的类型=类型转换器的全类名
+       在当前struts2应用被加载时创建实例
+
+* 示例步骤：
+  1. 给User类添加birth属性，为java.sql.Date数据类型，并编写setBirth，getBirth方法
+  2. 两个jsp页面list.jsp和edit.jsp中的表单都添加一个`<s:textfield name="birth" label="生日" />`
+  3. 编写自定义类型转换器DateConverter类：
+
+     ```java
+     package com.suftz.day03;
+
+     import org.apache.struts2.util.StrutsTypeConverter;
+
+     import java.sql.Date;
+     import java.text.DateFormat;
+     import java.text.ParseException;
+     import java.text.SimpleDateFormat;
+     import java.util.Map;
+
+     public class DateConverter extends StrutsTypeConverter {
+
+         private DateFormat dateFormat;
+
+         public DateConverter(){
+             dateFormat=new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+         }
+
+         @Override
+         public Object convertFromString(Map context, String[] values, Class toClass) {
+             if(toClass== Date.class){
+                 if(values!=null&& values.length>0){
+                     String value=values[0];
+                     try{
+                         return new Date(dateFormat.parse(value).getTime());
+                     }catch(ParseException e){
+                         e.printStackTrace();
+                     }
+                 }
+             }
+             return values;
+         }
+
+         @Override
+         public String convertToString(Map context, Object o) {
+             if(o instanceof Date){
+                 Date date=(Date)o;
+                 return dateFormat.format(date);
+             }
+             return null;
+         }
+     }
+     ```
+
+  4. 编写配置文件：
+     从上面的说明可知，配置文件可在两个位置进行编写
+     * 在User类相同的目录下，新建User-conversion.properties，文件内容可为：
+        `birth=com.suftz.day03.DateConverter`
+     * 在src目录下，直接新建一个文件xwork-consersion.properties,文件内容为：
+        `java.sql.Date=com.suftz.day03.DateConverter`
+        > 如果是maven项目，配置文件相关的资源文件都放在src/main/resources里面
+
+* 可以通过将日期字符串格式放在web.xml作为context-param，然后在DateConverter类中去读取该配置参数，获取format格式串，但是需要注意的是，由于上面转换器创建SimpleDateFormat对象是在转换器的构造器中，也就是在创建转换器对象时需要获取格式串，使用ServletActionContext来获取原生ServletContext，进而获取context-param参数，这种写法是行不通的，因为此时获取原生ServletContext为null,说明初始化创建转换器时，ServletContext对象都还没装配到ServletActionContext里
+  解决思路：可以将使用ServletActionContext来获取context-param的代码写在DataConverter的一个方法内
+  >这样处理的问题，每次转换都需要去读配置文件，明显是没有必要的，而且该转换器却又是单例的，只会创建一次，但是创建它的时候，ServletActionContext里面还没有ServletContext，有没有更好的办法
+  > 可以将读取配置或创建的DateFormat对象存到类的实例属性中，每次不直接去使用对象属性dateFormat，而是还是调用getDateFormat方法，只是调用前需要判断当前对象属性dateFormat是否为null，不为null，则直接返回
+
+  ```java
+  package com.suftz.day03;
+
+  import org.apache.struts2.ServletActionContext;
+  import org.apache.struts2.util.StrutsTypeConverter;
+
+  import javax.servlet.ServletContext;
+  import java.sql.Date;
+  import java.text.DateFormat;
+  import java.text.ParseException;
+  import java.text.SimpleDateFormat;
+  import java.util.Map;
+
+  public class DateConverter extends StrutsTypeConverter {
+
+      private DateFormat dateFormat;
+      public DateConverter(){
+      }
+
+      @Override
+      public Object convertFromString(Map context, String[] values, Class toClass) {
+          if(toClass== Date.class){
+              if(values!=null&& values.length>0){
+                  String value=values[0];
+                  try{
+                      return new Date(getDateFormat().parse(value).getTime());
+                  }catch(ParseException e){
+                      e.printStackTrace();
+                  }
+              }
+          }
+          return values;
+      }
+
+      public DateFormat getDateFormat(){
+          if(dateFormat==null){
+              ServletContext servletContext= ServletActionContext.getServletContext();
+              String pattern=servletContext.getInitParameter("pattern");
+              dateFormat=new SimpleDateFormat(pattern);
+          }
+          return dateFormat;
+      }
+
+      @Override
+      public String convertToString(Map context, Object o) {
+          if(o instanceof Date){
+              Date date=(Date)o;
+              return getDateFormat().format(date);
+          }
+          return null;
+      }
+  }
+  ```
+
+### 类型转换与复杂对象配合使用
+
+* 表单可以提交数据后，注入到复杂对象中，struts2是支持的，`input name="属性.属性"`
+* 表单可以提交数据后，注入到集合中，struts2也是直接支持的，`input name="属性[下标].属性"`
+* 如果上列的属性中还有诸如日期的引用数据类型，可以直接使用全局转换器来进行转换
+
+## 消息处理和国际化
+
+### 国际化配置
+
+* 在程序设计领域, 把在无需改写源代码即可让开发出来的应用程序能够支持多种语言和数据格式的技术称为国际化.
+* 与国际化对应的是本地化, 指让一个具备国际化支持的应用程序支持某个特定的地区
+* Struts2 国际化是建立在 Java 国际化基础上的：
+  * 为不同国家/语言提供对应的消息资源文件
+  * Struts2 框架会根据请求中包含的 Locale 加载对应的资源文件
+  * 通过程序代码取得该资源文件中指定 key 对应的消息
+
+* 配置国际化资源文件
+  1. Action 范围资源文件：在Action类文件所在的路径建立名为ActionName_language_country.properties 的文件
+  2. 包范围资源文件：在包的根路径下建立文件名为package_language_country.properties 的属性文件，一旦建立，处于该包下的所有 Action 都可以访问该资源文件。注意：包范围资源文件的 baseName 就是package，不是Action所在的包名。
+  3. 全局资源文件
+     * 命名方式: basename_language_country.properties，比如i18n_zh_CN_.properties,i18n_en_US.properties
+     * 配置struts.xml：`<constant name="struts.custom.i18n.resources" value="baseName自己取名"/>`
+  4. 临时指定资源文件：`<s:i18n name=""/>` 标签的 name 属性指定临时的国际化资源文件
+
+* 加载资源文件的顺序
+  假设我们在某个 ChildAction 中调用了getText("username")：
+  1. 加载和 ChildAction 的类文件在同一个包下的系列资源文件 ChildAction.properties
+  2. 加载  ChildAction 实现的接口 IChild，且和 IChildn 在同一个包下 IChild.properties 系列资源文件。
+  3. 加载 ChildAction 父类 Parent，且和 Parent 在同一个包下的 baseName 为 Parent.properties 系列资源文件。
+  4. 若 ChildAction 实现 ModelDriven 接口，则对于getModel()方法返回的model 对象，重新执行第(1)步操作。
+  5. 查找当前包下 package.properties 系列资源文件。
+  6. 沿着当前包上溯，直到最顶层包来查找 package.properties 的系列资源文件。
+  7. 查找 struts.custom.i18n.resources 常量指定 baseName 的系列资源文件。
+  8. 直接输出该key的字符串值。
+
+* 示例：
+  1. struts.xml配置添加如下：
+     `<constant name="struts.custom.i18n.resources" value="i18n"/>`
+  2. 在src下（maven项目则在resources里面），添加两个文件i18n_zh_CN_.properties,i18n_en_US.properties如下：
+
+     ```properties
+     name=\u59d3\u540d
+     password=\u5bc6\u7801
+     age=\u5e74\u9f84
+     address=\u5730\u5740
+     email=\u90ae\u7bb1
+     info=\u4fe1\u606f
+     birth=\u751f\u65e5
+     ```
+
+     ```properties
+     name=name
+     password=password
+     age=age
+     address=address
+     email=email
+     info=info
+     birth=birth
+     ```
+
+  3. list.jsp中表单标签部分，修改如下：
+
+     ```xml
+     <s:form action="user/add" method="POST" >
+         <s:textfield name="name" key="name" />
+         <s:password name="password" key="password" showPassword="true" />
+         <s:textfield name="age" key="age" />
+         <s:textfield name="address" key="address" />
+         <s:textfield name="email" key="email" />
+         <s:textarea name="info" key="info" />
+         <s:textfield name="birth" key="birth" />
+         <s:submit />
+     </s:form>
+     ```
+
+     > 也可以使用像`<s:textfield name="age" label="%{getText('password')}" />`写法，来获取国际化,使用`%{}`是为了让struts来进行ognl解析,能这样写的原因：因为此时在对象栈中有com.opensymphony.xwork2.DefaultTextProvider	对象实例，该对象中提供了访问国际化资源文件的getText()方法，同时还需要通知struts2在表单中label里面放的不是一个普通字符串，而是ognl表达式
+
+* 在Action类中访问国际化文件，需要继承ActionSupport，因为该类已经实现了TextProvider接口，则可以直接在Action类使用getText方法
+
+### 利用超链接实现动态加载国际化资源文件
+
+* Struts2 使用 i18n 拦截器处理国际化，并且将其注册在默认的拦截器中
+* i18n拦截器在执行Action方法前，自动查找请求中一个名为request_locale 的参数。如果该参数存在，拦截器就将其作为参数，转换成Locale对象，并将其设为用户默认的Locale(代表国家/语言环境)。并把其设置为 session 的 WW_TRANS_I18N_LOCALE 属性
+* 若 request 没有名为request_locale 的参数，则 i18n 拦截器会从 Session 中获取 WW_TRANS_I18N_LOCALE 的属性值，若该值不为空，则将该属性值设置为浏览者的默认Locale
+* 若 session 中的 WW_TRANS_I18N_LOCALE 的属性值为空，则从 ActionContext 中获取 Locale 对象。
+
+* 图解如下：
+  ![Struts2动态加载加载国际化](images/Struts2动态加载加载国际化.png)
+
+  >从图解可以了解到，只是第一次访问站点的时候需要传递request_locale参数，后面其他的页面的访问，只要是在同一个会话期间，显示的文字语言会参考第一次传递的参数request_locale，除非后面又加上这个参数改变其传参的值，才能切换语言。如果没有传递该参数，且session中也没有记录，则会根据浏览器发送的请求头信息，来分析优先加载的语言信息
+
+* 源码解析：
+  1. 从拦截器栈中可以找到，实现i18n国际化功能，其实是使用了一个拦截器来完成的，该拦截器是：
+     `<interceptor name="i18n" class="com.opensymphony.xwork2.interceptor.I18nInterceptor"/>`
+  2. 拦截器I18nInterceptor部分代码如下：
+
+    ```java
+    public static final String DEFAULT_SESSION_ATTRIBUTE = "WW_TRANS_I18N_LOCALE";
+    public static final String DEFAULT_PARAMETER = "request_locale";
+    public static final String DEFAULT_REQUESTONLY_PARAMETER = "request_only_locale";
+
+    protected String parameterName = DEFAULT_PARAMETER;//"request_locale"
+    protected String requestOnlyParameterName = DEFAULT_REQUESTONLY_PARAMETER;//"request_only_locale"
+    protected String attributeName = DEFAULT_SESSION_ATTRIBUTE;//"WW_TRANS_I18N_LOCALE"
+
+    //拦截器的拦截方法
+    public String intercept(ActionInvocation invocation) throws Exception {
+       if (LOG.isDebugEnabled()) {
+           LOG.debug("intercept '#0/#1' {",
+               invocation.getProxy().getNamespace(), invocation.getProxy().getActionName());
+       }
+       //get requested locale
+       Map<String, Object> params = invocation.getInvocationContext().getParameters();
+
+       boolean storeInSession = true;
+        //获取请求参数中的request_locale
+       Object requestedLocale = findLocaleParameter(params, parameterName);
+       if (requestedLocale == null) {
+           //获取请求参数中的request_only_locale，这个参数的作用就是，如果有这个参数，则国际化的参数有效范围是request,而不是session
+           requestedLocale = findLocaleParameter(params, requestOnlyParameterName);
+           if (requestedLocale != null) {
+               storeInSession = false;
+           }
+       }
+        //根据请求参数获取Locale对象
+       Locale locale = getLocaleFromParam(requestedLocale);
+
+       //save it in session
+       Map<String, Object> session = invocation.getInvocationContext().getSession();
+
+       if (session != null) {
+           synchronized (session) {
+               if (locale == null) {
+                   //能通过读session信息获取locale，则不让写locale
+                   storeInSession = false;
+                   //读出session
+                   locale = readStoredLocale(invocation, session);
+               }
+
+               if (storeInSession) {
+                   session.put(attributeName, locale);
+               }
+           }
+       }
+        //将locale保存
+       saveLocale(invocation, locale);
+
+       if (LOG.isDebugEnabled()) {
+           LOG.debug("before Locale=#0", invocation.getStack().findValue("locale"));
+       }
+
+       final String result = invocation.invoke();
+       if (LOG.isDebugEnabled()) {
+           LOG.debug("after Locale=#0", invocation.getStack().findValue("locale"));
+           LOG.debug("intercept } ");
+       }
+
+       return result;
+    }
+    ```
+
+* list.jsp页面通过链接来动态加载国际化资源做法：
+
+  ```xml
+  <a href="user/list.action?request_locale=zh_CN">中文</a><br>
+  <a href="user/list.action?request_locale=en_US">English</a><br>
+  ```
+
+  > 注意，超链接必须是一个Struts2的请求，即必须是action请求，才会走拦截器栈，使i18n工作。如果直接通过jsp资源文件的地址来访问，则不会经过拦截器，i18n国际化失效
+
+## 输入验证//todo,modelDriven怎么验证
+
+* 一个健壮的 web 应用程序必须确保用户输入是合法、有效的.
+* Struts2 的输入验证
+  * 基于 XWork Validation Framework 的声明式验证：Struts2 提供了一些基于 XWork Validation Framework 的内建验证程序. 使用这些验证程序不需要编程, 只要在一个 XML 文件里对验证程序应该如何工作作出声明就可以了. 需要声明的内容包括:
+    1. 哪些字段需要进行验证
+    2. 使用什么验证规则
+    3. 在验证失败时应该把什么样的出错消息发送到浏览器端
+  * 编程验证：通过编写代码来验证用户输入
+
+### 声明式验证
+
+* 声明式验证程序可以分为两类:
+  1. 字段验证:  判断某个字段属性的输入是否有效
+  2. 非字段验证:  不只针对某个字段，而是针对多个字段的输入值之间的逻辑关系进行校验。例如：对再次输入密码的判断。
+* 使用一个声明式验证程序需要 3 个步骤:
+  1. 确定哪些 Action 字段需要验证
+  2. 编写一个验证程序配置文件. 它的文件名必须是以下两种格式之一:
+     若一个 Action 类的多个 action 使用同样的验证规则: ActionClass-validation.xml
+     若一个 Action 类的多个 action 使用不同的验证规则: ActionClass-alias-validation.xml, 例如 UserAction-User_create-validation.xml
+  3. 确定验证失败时的响应页面: 在 struts.xml 文件中定义一个 `<result name="input">` 的元素
+
+* Struts2内建的验证规则
+
+  conversion validator：转换验证器
+  date validator：日期验证器
+  double validator：浮点验证器
+  email validator：email 验证器
+  expression validator：表达式验证器
+  fieldexpression validator：字段表达式验证器
+  int validator：整型验证器
+  regex validator：正则表达式验证器
+  required validator：非空验证器
+  requiredstring validator：非空字符串验证器
+  stringlength validator：字符串长度验证器
+  url validator：url 格式验证器
+  visitor validator：复合属性验证器
+
+* 验证配置：
+
+```xml
+<!DOCTYPE validators PUBLIC
+        "-//Apache struts//XWork Validator 1.0.2//EN"
+        "http://struts.apache.org/dtds/xwork-validator-1.0.2.dtd">
+<validators>
+
+    <field name="age">
+        <field-validator type="int">
+            <param name="min">18</param>
+            <param name="max">60</param>
+            <message>age need to be between ${min} and ${max}</message>
+        </field-validator>
+    </field>
+</validators>
+```
+
+* Struts2声明式验证原理解析
+  Struts2 的 Validation 拦截器负责加载和执行已注册的验证程序，它是 defaultStack 拦截器的一员
+
+  代码分析如下：
+
+* 验证规则和验证器
+  每个验证规则都对应一个具体的验证器，通过检索default.xml可以查看验证器信息
+
+  ```xml
+  <validators>
+      <validator name="required" class="com.opensymphony.xwork2.validator.validators.RequiredFieldValidator"/>
+      <validator name="requiredstring" class="com.opensymphony.xwork2.validator.validators.RequiredStringValidator"/>
+      <validator name="int" class="com.opensymphony.xwork2.validator.validators.IntRangeFieldValidator"/>
+      <validator name="long" class="com.opensymphony.xwork2.validator.validators.LongRangeFieldValidator"/>
+      <validator name="short" class="com.opensymphony.xwork2.validator.validators.ShortRangeFieldValidator"/>
+      <validator name="double" class="com.opensymphony.xwork2.validator.validators.DoubleRangeFieldValidator"/>
+      <validator name="date" class="com.opensymphony.xwork2.validator.validators.DateRangeFieldValidator"/>
+      <validator name="expression" class="com.opensymphony.xwork2.validator.validators.ExpressionValidator"/>
+      <validator name="fieldexpression" class="com.opensymphony.xwork2.validator.validators.FieldExpressionValidator"/>
+      <validator name="email" class="com.opensymphony.xwork2.validator.validators.EmailValidator"/>
+      <validator name="url" class="com.opensymphony.xwork2.validator.validators.URLValidator"/>
+      <validator name="visitor" class="com.opensymphony.xwork2.validator.validators.VisitorFieldValidator"/>
+      <validator name="conversion" class="com.opensymphony.xwork2.validator.validators.ConversionErrorFieldValidator"/>
+      <validator name="stringlength" class="com.opensymphony.xwork2.validator.validators.StringLengthFieldValidator"/>
+      <validator name="regex" class="com.opensymphony.xwork2.validator.validators.RegexFieldValidator"/>
+      <validator name="conditionalvisitor" class="com.opensymphony.xwork2.validator.validators.ConditionalVisitorFieldValidator"/>
+  </validators>
+  ```
+
+### Struts2内建验证程序
+
+### 自定义验证器
+
+* 自定义验证器必须实现 Validator 接口.
+* ValidatorSupport 和 FieldValidatorSupport 实现了 Validator 接口
+  若需要普通的验证程序, 可以继承 ValidatorSupport 类
+  若需要字段验证程序, 可以继承 FieldValidatorSupport 类
+  若验证程序需要接受一个输入参数, 需要为这个参数增加一个相应的属性
+* 注册验证程序: 自定义验证器需要在类路径里的某个 validators.xml 文件里注册:  验证框架首先在根目录下找validators.xml文件,没找到validators.xml文件, 验证框架将调用默认的验证设置,即default.xml里面的配置信息.
+
+* 比如，自定义一个 18 位身份证验证器
+  1. 编写验证器类
+  2. 在 validators.xml 文件中进行注册
+  3. 在验证配置文件中使用
+
+//使用了ModelDriven的Action如何验证model，todo
+
+## 文件上传
+
+### 文件上传概述
+
+* 要想使用 HTML 表单上传一个或多个文件
+  1. 须把 HTML 表单的 enctype 属性设置为 multipart/form-data
+  2. 须把 HTML 表单的method 属性设置为 post
+  3. 须添加 `<input type=“file”>` 字段.
+
+### Struts2对文件上传的支持
+
+* 在 Struts 应用程序里, FileUpload 拦截器和 Jakarta Commons FileUpload 组件可以完成文件的上传
+  需要导入commons-fileupload.jar和commons-io.jar
+* 步骤:
+  1. 在 Jsp 页面的文件上传表单里使用 file 标签. 如果需要一次上传多个文件, 就必须使用多个 file 标签, 但它们的名字必须是相同的
+  2. 在 Action 中新添加 3 个和文件上传相关的属性. 这 3 个属性的名字必须是以下格式
+     [File Name] : File -被上传的文件。例如：data
+     [File Name]ContentType : String -上传文件的文件类型。例如：dataContentType
+     [File Name]FileName : String -上传文件的文件名。例如：dataFileName
+     比如上传头像图片：
+
+     ```java
+     private File avtor;
+     private String avtorContentType;
+     private String avtorFileName;
+     ```
+
+  3. 如果上上传多个文件, 上述三个属性可以使用数组或 List
+
+### 配置FileUpload拦截器
+
+* FileUpload 拦截器有 3 个属性可以设置.
+  1. maximumSize: 上传单个文件的最大长度(以字节为单位), 默认值为 2 MB
+  2. allowedTypes: 允许上传文件的类型, 各类型之间以逗号分隔
+  3. allowedExtensions: 允许上传文件扩展名, 各扩展名之间以逗号分隔
+  4. 可以在 struts.xml 文件中覆盖这 3 个属性
+* Commons FileUpload 组件默认接受上传文件总的最大值为 2M， 可以通过在 struts 配置文件中配置常量的方式修改
+* 与文件上传有关的出错消息在 struts-messages.properties 文件里预定义.  可以在文件上传 Action 相对应的资源文件中重新定义错误消息
+
+* 定制错误消息，可以在国际化资源文件中定义如下：
+  1. struts.message.error.uploading:文件上传出错的消息
+  2. struts.message.file.too.large:文件超出最大值的消息
+  3. struts.message.content.type.not.allowed:文件内容类型不合法的消息
+  4. struts.message.error.file.extension.not.allowed:文件扩展名不合法的消息
+
+* 在struts.xml配置示例:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.3.dtd">
+<struts>
+    <constant name="struts.custom.i18n.resources" value="i18n"/>
+    <constant name="struts.action.extension" value="action,do,"></constant>
+    <package name="user" namespace="/user" extends="struts-default">
+<!--        修改PrepareInterceptor拦截器的alwaysInvokePrepare属性值为false-->
+        <interceptors>
+            <interceptor-stack name="suftzStack">
+                <interceptor-ref name="paramsPrepareParamsStack">
+                    <param name="prepare.alwaysInvokePrepare">false</param>
+                <param name="fileUpload.maximumSize">20000000</param>
+                <param name="fileUpload.allowedTypes">image/gif,image/jpeg,image/png</param>
+                <param name="fileUpload.allowedExtensions">gif,jpeg,png,jpg</param>
+            </interceptor-ref>
+            </interceptor-stack>
+      </interceptors>
+        <default-interceptor-ref name="suftzStack" />
+        <action name="list" class="com.suftz.day03.UserAction" method="list">
+            <result name="success">/WEB-INF/day03/list.jsp</result>
+        </action>
+        <action name="delete" class="com.suftz.day03.UserAction" method="delete">
+            <result name="success" type="redirectAction">
+                <param name="actionName">list</param>
+                <param name="namespace">/user</param>
+            </result>
+        </action>
+        <action name="add" class="com.suftz.day03.UserAction" method="add">
+            <result name="success" type="redirectAction">
+                <param name="actionName">list</param>
+                <param name="namespace">/user</param>
+            </result>
+            <result name="input">/WEB-INF/day03/list.jsp</result>
+        </action>
+        <action name="get" class="com.suftz.day03.UserAction" method="get">
+            <result name="success" type="dispatcher">/WEB-INF/day03/edit.jsp</result>
+        </action>
+        <action name="update" class="com.suftz.day03.UserAction" method="update">
+            <result name="success" type="redirectAction">
+                <param name="actionName">list</param>
+                <param name="namespace">/user</param>
+            </result>
+            <result name="input">/WEB-INF/day03/edit.jsp</result>
+        </action>
+    </package>
+
+</struts>
+```
+
+* 当上传多个文件时，可以设置上传最大的大小，以修改常量参数的方式，org.apache.struts2下的default.properties中的struts.multipart.maxSize，在struts.xml中重新修改即可
+
+## 文件下载
+
+* 文件下载是通过stream拦截器来实现的
+
+### Stream结果类型
+
+* Struts 专门为文件下载提供了一种 Stream 结果类型. 在使用一个 Stream 结果时, 不必准备一个 JSP 页面.
+* Stream 结果类型可以设置如下参数:
+  1. contentType：被下载的文件的 MIME 类型。默认值为 text/plain
+  2. contentLength：被下载的文件的大小，以字节为单位
+  3. contentDisposition： 可以设置下载文件名的ContentDispositon 响应头，默认值为 inline，通常设置为如下格式： attachment;filename="document.pdf".
+  4. inputName：Action 中提供的文件的输入流。默认值为 inputStream
+  5. bufferSize：文件下载时缓冲区的大小。默认值为 1024
+  6. allowCaching ：文件下载时是否允许使用缓存。默认值为 true
+  7. contentCharSet：文件下载时的字符编码。
+* Stream 结果类型的参数可以在 Action 以属性的方式覆盖
+
+* 示例：
+  1. 配置struts.xml如下：
+
+     ```xml
+     <action name="download" class="com.suftz.day03.DownloadAction" method="execute">
+        <result type="stream" name="success" />
+     </action>
+     ```
+
+  2. DownloadAction.java如下：
+
+     ```java
+     package com.suftz.day03;
+
+     import com.opensymphony.xwork2.ActionSupport;
+     import org.apache.struts2.ServletActionContext;
+
+     import javax.servlet.ServletContext;
+     import java.io.FileInputStream;
+     import java.io.FileNotFoundException;
+     import java.io.IOException;
+     import java.io.InputStream;
+
+     public class DownloadAction extends ActionSupport {
+
+         private String contentType;
+         private long contentLength;
+         private String contentDisposition;
+         private InputStream inputStream;
+
+         public DownloadAction() {
+         }
+
+         public String getContentType() {
+             return contentType;
+         }
+
+         public void setContentType(String contentType) {
+             this.contentType = contentType;
+         }
+
+         public long getContentLength() {
+             return contentLength;
+         }
+
+         public void setContentLength(long contentLength) {
+             this.contentLength = contentLength;
+         }
+
+         public String getContentDisposition() {
+             return contentDisposition;
+         }
+
+         public void setContentDisposition(String contentDisposition) {
+             this.contentDisposition = contentDisposition;
+         }
+
+         public InputStream getInputStream() {
+             return inputStream;
+         }
+
+         public void setInputStream(InputStream inputStream) {
+             this.inputStream = inputStream;
+         }
+         @Override
+         public  String execute(){
+             contentType="text/html";
+             contentDisposition="attachment;filename=hidden.html";
+             ServletContext servletContext= ServletActionContext.getServletContext();
+             String fileName=servletContext.getRealPath("/files/hidden.html");
+             try {
+                 inputStream=new FileInputStream(fileName);
+                 contentLength=inputStream.available();
+             } catch (IOException e) {
+                 e.printStackTrace();
+             }
+             return SUCCESS;
+         }
+     }
+     ```
+
+## 表单重复提交
+
+### 概述
+
+* 表单的重复提交：
+  * 若刷新表单页面, 再提交表单不算重复提交
+  * 在不刷新表单页面的前提下:
+    * 多次点击提交按钮
+    * 已经提交成功, 按 "回退" 之后, 再点击 "提交按钮"
+    * 在控制器响应页面的形式为转发情况下，若已经提交成功, 然后点击 "刷新(F5)“
+* 重复提交的缺点:
+  * 加重了服务器的负担
+  * 可能导致错误操作
+
+### token标签处理重复提交
+
+* Struts 提供的 token 标签可以用来生成一个独一无二的标记. 这个标签必须嵌套在 form 标签的内部使用, 它将在表单里插入一个隐藏字段并把标记值（隐藏域的字段的值）保存在HttpSession 对象里.
+* Token 标签必须与 Token 或 TokenSession 拦截器配合使用, 这两个拦截器都能对标记进行处理.
+* Token 拦截器在遇到重复提交情况时, 会返回 invalid.token 结果并加上一个 Action 错误. 这种错误默认的消息是: The form has already been processed or no token was supplied, please try again.
+* TokenSession 拦截器采取的做法只是阻断后续的提交, 用户将看到同样的响应，但实际上并没有重复提交
+
+* 使用`<s:token />`标签，须在`<s:form>`里面，他会进行以下事情：
+  1. 生成一个隐藏域，生成一个隐藏域的值
+  2. 在session添加一个属性值
+  3. 隐藏域的值和session属性值是一致的
+
+* 使用Token或TokenSeesion拦截器
+  1. 这两个拦截器均不在默认的拦截器栈中，所以需要手工配置一下
+  2. 若使用Token拦截器，则需要配置一个token.valid的result
+  3. 若使用TokenSession拦截器，则不需要配置任何其他的result
+
+* Token 和TokenSession的区别：
+  1. 都是解决表单重复提交问题
+  2. 使用token拦截器会转到token.valid这个result
+  3. 使用TokenSession拦截器则还会响应到哪个目标页面，但不会执行目标action方法，就像什么都没发生过一样
+
+* 示例配置如下：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+        "http://struts.apache.org/dtds/struts-2.3.dtd">
+<struts>
+    <constant name="struts.custom.i18n.resources" value="i18n"/>
+    <constant name="struts.action.extension" value="action,do,"></constant>
+    <package name="user" namespace="/user" extends="struts-default">
+<!--        修改PrepareInterceptor拦截器的alwaysInvokePrepare属性值为false-->
+        <interceptors>
+            <interceptor-stack name="suftzStack">
+                <interceptor-ref name="paramsPrepareParamsStack">
+                    <param name="prepare.alwaysInvokePrepare">false</param>
+                <param name="fileUpload.maximumSize">20000000</param>
+                <param name="fileUpload.allowedTypes">image/gif,image/jpeg,image/png</param>
+                <param name="fileUpload.allowedExtensions">gif,jpeg,png,jpg</param>
+            </interceptor-ref>
+            </interceptor-stack>
+      </interceptors>
+        <default-interceptor-ref name="suftzStack" />
+        <action name="list" class="com.suftz.day03.UserAction" method="list">
+            <result name="success">/WEB-INF/day03/list.jsp</result>
+        </action>
+        <action name="delete" class="com.suftz.day03.UserAction" method="delete">
+            <result name="success" type="redirectAction">
+                <param name="actionName">list</param>
+                <param name="namespace">/user</param>
+            </result>
+        </action>
+        <action name="add" class="com.suftz.day03.UserAction" method="add">
+            <interceptor-ref name="token" />
+            <interceptor-ref name="suftzStack" />
+            <result name="success" type="redirectAction">
+                <param name="actionName">list</param>
+                <param name="namespace">/user</param>
+            </result>
+            <result name="invalid.token">/WEB-INF/day03/error.jsp</result>
+            <result name="input">/WEB-INF/day03/list.jsp</result>
+        </action>
+        <action name="get" class="com.suftz.day03.UserAction" method="get">
+            <result name="success" type="dispatcher">/WEB-INF/day03/edit.jsp</result>
+        </action>
+        <action name="update" class="com.suftz.day03.UserAction" method="update">
+            <result name="success" type="redirectAction">
+                <param name="actionName">list</param>
+                <param name="namespace">/user</param>
+            </result>
+            <result name="input">/WEB-INF/day03/edit.jsp</result>
+        </action>
+        <action name="download" class="com.suftz.day03.DownloadAction" method="execute">
+        <result type="stream" name="success" />
+    </action>
+    </package>
+
+</struts>
+```
+
+> 可以使用s:actionerror标签来显示重复提交的错误信息，该错误消息可以在国际化资源文件中被覆盖，`struts.messages.invalid.token=XXXX`
+
+### 自定义拦截器
+
+* 拦截器（Interceptor）是 Struts 2 的核心组成部分。
+* Struts2 很多功能都是构建在拦截器基础之上的，例如文件的上传和下载、国际化、数据类型转换和数据校验等等。
+* Struts2 拦截器在访问某个 Action 方法之前或之后实施拦截
+* Struts2 拦截器是可插拔的, 拦截器是 AOP（面向切面编程） 的一种实现．
+* 拦截器栈(Interceptor Stack): 将拦截器按一定的顺序联结成一条链. 在访问被拦截的方法时, Struts2 拦截器链中的拦截器就会按其之前定义的顺序被依次调用
+
+![Struts2的执行流程](images/Struts2的执行流程.gif)
+
+* Struts2自带的拦截器：可以通过struts-default.xml文件查看对所有自带拦截器的声明
+
+#### Interceptor接口
+
+* 每个拦截器都是实现了com.opensymphony.xwork2.interceptor.Interceptor接口的Java类
+
+1. init: 该方法将在拦截器被创建后立即被调用, 它在拦截器的生命周期内只被调用一次. 可以在该方法中对相关资源进行必要的初始化
+2. interecept: 每拦截一个请求, 该方法就会被调用一次.
+3. destroy: 该方法将在拦截器被销毁之前被调用, 它在拦截器的生命周期内也只被调用一次.
+
+* Struts 会依次调用为某个 Action 而注册的每一个拦截器的 interecept 方法.
+* 每次调用 interecept 方法时, Struts 会传递一个 ActionInvocation 接口的实例
+* ActionInvocation: 代表一个给定 Action 的执行状态, 拦截器可以从该类的对象里获得与该 Action 相关联的 Action 对象和 Result 对象. 在完成拦截器自己的任务之后, 拦截器将调用 ActionInvocation 对象的 invoke 方法前进到 Action 处理流程的下一个环节
+* AbstractInterceptor 类实现了 Interceptor 接口. 并为 init, destroy 提供了一个空白的实现
+
+* 自定义拦截器示例：
+  1. 编写Java类：
+
+     ```java
+     package com.suftz.day03;
+
+     import com.opensymphony.xwork2.ActionInvocation;
+     import com.opensymphony.xwork2.interceptor.AbstractInterceptor;
+
+     public class MyInterceptor extends AbstractInterceptor {
+
+         @Override
+         public String intercept(ActionInvocation invocation) throws Exception {
+             System.out.println("before invocation.invoke...");
+             String result=invocation.invoke();
+             System.out.println("after invocation.invoke...");
+             return result;
+         }
+     }
+     ```
+
+  2. struts.xml配置如下：
+
+    ```xml
+    <?xml version="1.0" encoding="UTF-8"?>
+
+    <!DOCTYPE struts PUBLIC
+            "-//Apache Software Foundation//DTD Struts Configuration 2.0//EN"
+            "http://struts.apache.org/dtds/struts-2.3.dtd">
+    <struts>
+        <constant name="struts.custom.i18n.resources" value="i18n"/>
+        <constant name="struts.action.extension" value="action,do,"></constant>
+        <package name="user" namespace="/user" extends="struts-default">
+    <!--        修改PrepareInterceptor拦截器的alwaysInvokePrepare属性值为false-->
+            <interceptors>
+                <interceptor name="hello" class="com.suftz.day03.MyInterceptor" />
+                <interceptor-stack name="suftzStack">
+                    <interceptor-ref name="paramsPrepareParamsStack">
+                        <param name="prepare.alwaysInvokePrepare">false</param>
+                        <param name="fileUpload.maximumSize">20000000</param>
+                        <param name="fileUpload.allowedTypes">image/gif,image/jpeg,image/png</param>
+                        <param name="fileUpload.allowedExtensions">gif,jpeg,png,jpg</param>
+                </interceptor-ref>
+                </interceptor-stack>
+          </interceptors>
+            <default-interceptor-ref name="suftzStack" />
+            <action name="list" class="com.suftz.day03.UserAction" method="list">
+                <result name="success">/WEB-INF/day03/list.jsp</result>
+            </action>
+            <action name="delete" class="com.suftz.day03.UserAction" method="delete">
+                <result name="success" type="redirectAction">
+                    <param name="actionName">list</param>
+                    <param name="namespace">/user</param>
+                </result>
+            </action>
+            <action name="add" class="com.suftz.day03.UserAction" method="add">
+                <interceptor-ref name="hello"></interceptor-ref>
+                <interceptor-ref name="token" />
+                <interceptor-ref name="suftzStack" />
+                <result name="success" type="redirectAction">
+                    <param name="actionName">list</param>
+                    <param name="namespace">/user</param>
+                </result>
+                <result name="invalid.token">/WEB-INF/day03/error.jsp</result>
+                <result name="input">/WEB-INF/day03/list.jsp</result>
+            </action>
+            <action name="get" class="com.suftz.day03.UserAction" method="get">
+                <result name="success" type="dispatcher">/WEB-INF/day03/edit.jsp</result>
+            </action>
+            <action name="update" class="com.suftz.day03.UserAction" method="update">
+                <result name="success" type="redirectAction">
+                    <param name="actionName">list</param>
+                    <param name="namespace">/user</param>
+                </result>
+                <result name="input">/WEB-INF/day03/edit.jsp</result>
+            </action>
+            <action name="download" class="com.suftz.day03.DownloadAction" method="execute">
+            <result type="stream" name="success" />
+        </action>
+        </package>
+
+    </struts>
+    ```
+
+    上面的配置中定义了拦截器hello，拦截器类是MyInterceptor，在action name="add"中使用，此时这种配置，ActionInvocation会首先进入到该拦截器，再进入到token，再进入到suftzStack。
+    其中，在自定义拦截器的方法intercept中，如果不执行invocation.invoke()而直接返回result字符串，则会使得后面的拦截器失效，不去执行，拦截器链断掉
+
+### 零配置
+
+### 整合Spring

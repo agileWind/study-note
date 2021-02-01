@@ -118,31 +118,54 @@
 // }
 // func("abc", 332, 3, "aa");
 
-var obj = {
-    "name": "Tom",
-    "age": 20,
-    getName: function () {
-        console.log(this.name);
-    }
-};
-obj.getName(); //Tom
+// var obj = {
+//     "name": "Tom",
+//     "age": 20,
+//     getName: function () {
+//         console.log(this.name);
+//     }
+// };
+// obj.getName(); //Tom
 
-var obj2 = new Object();
-obj2.name = "Jack";
-obj2.age = 12;
-obj2.getName = function () {
-    console.log(this);
+// var obj2 = new Object();
+// obj2.name = "Jack";
+// obj2.age = 12;
+// obj2.getName = function () {
+//     console.log(this);
+// }
+// obj2.getName(); //Jack
+
+
+// function Person(name,age){
+//     this.name;
+//     this.age;
+//     this.hello=function(){
+//         console.log("hello! I am "+name);
+//     }
+// }
+
+// var person=new Person("Smith",22);
+// person.hello();
+
+
+function isChinese(s){
+	return /[\u4e00-\u9fa5]/.test(s);
 }
-obj2.getName(); //Jack
-
-
-function Person(name,age){
-    this.name;
-    this.age;
-    this.hello=function(){
-        console.log("hello! I am "+name);
-    }
+function un(str){
+	if(!str){
+		return;
+	}
+	var unicode = '';
+	for (var i = 0; i <  str.length; i++) {
+		var temp = str.charAt(i);
+		if(isChinese(temp)){
+			unicode += '\\u' +  temp.charCodeAt(0).toString(16);
+		}
+		else{
+			unicode += temp;
+		}
+	}
+	return unicode;
 }
 
-var person=new Person("Smith",22);
-person.hello();
+console.log(un("上传头像"));

@@ -3765,19 +3765,20 @@ age=\u5e74\u9f84
       var str2="'a'";
       var str3='"b"';
       ```
-  
+
   2. 在javascript中，对象Object类型，属性名也可以不用引号括起来，比如：
-      
+
       ```javascript
       var obj1={"username":"tom","password":"123abc"};
       var obj2={'username':"tom",'password':"123abc"};
       var obj3={username:"tom",password:"123abc"};
       ```
-  
+
   3. **但是在json的字符串转成JSON对象中，json字符串要严格按照标准的写法，即：**
      1. 字符串使用双引号包围,不能使用单引号
      2. 对象的属性名也要使用双引号包围
      否则JSON.parse(str)会报错
+
      ```javascript
      var jsonStr="{'username':'tom'}";
      var jsonStr2="{'username':'tom'}";
