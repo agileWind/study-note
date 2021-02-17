@@ -56,9 +56,9 @@ Linux的学习方法
 3. 常见的操作系统(win7、 IOS、 Android、 Mac)
 4. Linux 吉祥物：Tux企鹅
     ![tux.png](images/tux.png)
-5.Linux的创始人：Linus Torvalds（林纳斯，git创始人）
-6.Linux主要的发行版:
-Ubuntu(乌班图)、 RedHat(红帽)、 CentOS、 Debain[蝶变]、 Fedora、 SuSE、OpenSUSE
+5. Linux的创始人：Linus Torvalds（林纳斯，git创始人）
+6. Linux主要的发行版:
+   Ubuntu(乌班图)、 RedHat(红帽)、 CentOS、 Debain[蝶变]、 Fedora、 SuSE、OpenSUSE
 
 ### Linux与UNIX的关系
 
