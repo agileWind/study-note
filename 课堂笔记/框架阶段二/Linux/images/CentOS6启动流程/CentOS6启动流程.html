@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)https://www.cnblogs.com/diantong/p/10734202.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="origin">
+    <meta name="description" content="参考：Linux启动流程和grub详解（作者：好笔记运维） 为什么把这位的参考放在前面，主要是这位大佬的流程图太详细了。虽说不一定要了解这么详细，但还是很佩服啊。不多说，上图（在新标签中打开图片） 下">
+    <meta property="og:description" content="参考：Linux启动流程和grub详解（作者：好笔记运维） 为什么把这位的参考放在前面，主要是这位大佬的流程图太详细了。虽说不一定要了解这么详细，但还是很佩服啊。不多说，上图（在新标签中打开图片） 下">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>CentOS6启动流程</title>
+    <link id="favicon" rel="shortcut icon" href="https://common.cnblogs.com/favicon.svg" type="image/svg+xml">
+    
+    <link rel="stylesheet" href="./CentOS6启动流程_files/blog-common.min.css">
+    <link id="MainCss" rel="stylesheet" href="./CentOS6启动流程_files/bundle-red_autumnal_leaves.min.css">
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="./CentOS6启动流程_files/bundle-red_autumnal_leaves-mobile.min.css">
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/diantong/rss">
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/diantong/rsd.xml">
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/diantong/wlwmanifest.xml">
+    <script src="./CentOS6启动流程_files/osd.js.下载"></script><script async="" src="./CentOS6启动流程_files/analytics.js.下载"></script><script>
+        var currentBlogId = 288663;
+        var currentBlogApp = 'diantong';
+        var cb_enable_mathjax = false;
+        var isLogined = false;
+        var isBlogOwner = false;
+        var skinName = 'red_autumnal_leaves';
+        var visitorUserId = '';
+    </script>
+        <script>
+            var currentPostDateAdded = '2019-04-20 05:05';
+        </script>
+    <script src="./CentOS6启动流程_files/jquery-2.2.0.min.js.下载"></script>
+    <script src="./CentOS6启动流程_files/blog-common.min.js.下载"></script>
+    
+    
+    
+<meta http-equiv="origin-trial" content="A9ZgbRtm4pU3oZiuNzOsKcC8ppFSZdcjP2qYcdQrFKVzkmiWH1kdYY1Mi9x7G8+PS8HV9Ha9Cz0gaMdKsiVZIgMAAAB7eyJvcmlnaW4iOiJodHRwczovL2RvdWJsZWNsaWNrLm5ldDo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2MjYyMjA3OTksImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="origin-trial" content="A3HucHUo1oW9s+9kIKz8mLkbcmdaj5lxt3eiIMp1Nh49dkkBlg1Fhg4Fd/r0vL69mRRA36YutI9P/lJUfL8csQoAAACFeyJvcmlnaW4iOiJodHRwczovL2RvdWJsZWNsaWNrLm5ldDo0NDMiLCJmZWF0dXJlIjoiQ29udmVyc2lvbk1lYXN1cmVtZW50IiwiZXhwaXJ5IjoxNjI2MjIwNzk5LCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlfQ=="><script src="./CentOS6启动流程_files/pubads_impl_2021021101.js.下载" async=""></script><link rel="preload" href="./CentOS6启动流程_files/f.txt" as="script"><script type="text/javascript" src="./CentOS6启动流程_files/f.txt"></script><link rel="prefetch" href="https://ebc55d8465c163d18d0e714a2efa2177.safeframe.googlesyndication.com/safeframe/1-0-37/html/container.html"><link rel="prefetch" href="https://tpc.googlesyndication.com/safeframe/1-0-37/html/container.html"></head>
+<body class="has-navbar">
+    
+    
+
+    
+    <!--done-->
+<div id="home">
+<!--end: header 头部 -->
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    <!--done-->
+    <div id="topics">
+        <div class="post">
+            <h1 class="postTitle">
+                
+<a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/diantong/p/10734202.html">
+    <span>CentOS6启动流程（含详细流程图）</span>
+    
+
+
+</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                
+<div id="cnblogs_post_body" class="blogpost-body">
+    
+
+<p><img src="./CentOS6启动流程_files/949069-20190419100250340-806933743.jpg" alt=""></p>
+<p>　　下面开始简单的了解一下CentOS6的启动流程吧。</p>
+<p><strong><span style="font-size: 14pt">&nbsp;第一步、硬件启动阶段</span></strong></p>
+<p><img src="./CentOS6启动流程_files/949069-20190419103259347-1369699082.png" alt=""></p>
+<p>　　简单说一下这一步的流程：打开电源；POST自检；BIOS逐一排查设备启动顺序；如果是硬盘启动，读取硬盘的<span style="color: rgba(255, 0, 0, 1)">MBR</span>的<span style="color: rgba(255, 0, 0, 1)">BootLoader</span>。（这里默认MBR分区，暂不考虑GPT分区）</p>
+<p>　　这里主要有三个需要了解的地方BIOS启动顺序、MBR和BootLoader。BIOS启动顺序大部分人应该都知道，我就不赘述了。</p>
+<p>(1).MBR</p>
+<p>　　MBR（Main Boot Record），是硬盘的0柱面，0磁道、1扇区（第一个扇区），称为主引导扇区，也称为主引导记录。它由三部分组成：主引导程序（BootLoader）、硬盘分区表DPT（Disk Partition table）和硬盘有效标志（55AA）。</p>
+<p>　　<span style="color: rgba(255, 0, 0, 1)">注：硬盘默认一个扇区大小为512字节。</span></p>
+<p>　　第一部分，<span style="color: rgba(255, 0, 0, 1)">主引导程序（BootLoader）占446个字节，负责从活动分区中装载，并运行系统引导程序</span>。</p>
+<p>　　第二部分，硬盘分区表DPT占64个字节，有4个分区表项，每个分区表项占16个字节，硬盘中分区有多少以及每一个分区的大小都记录在其中。</p>
+<p>　　第三部分，硬盘有效标志，占2个字节，固定为55AA。如果这个标志位0xAA55，就认为这个是MBR。</p>
+<p>(2).BootLoader</p>
+<p>　　不同的系统有不同的主引导程序（BootLoader）。Windows使用的是NTLDR（NT Loader，Windows NT系列操作系统）、Bootmgr（Boot Manager，Windows Vista，7，8，10），Linux一般使用的是grub（也叫grub legacy）和grub2。</p>
+<p>　　CentOS6一般使用的是grub。GRUB（GRand Unified Bootloader）是一个来自GNU项目的多操作系统启动程序。</p>
+<p><strong><span style="font-size: 14pt">第二步、GRUB引导阶段</span></strong></p>
+<p><strong><span style="font-size: 14pt"><img src="./CentOS6启动流程_files/949069-20190419133440609-371589383.png" alt=""></span></strong></p>
+<p>&nbsp;</p>
+<p>　　简单说一下这一步的流程：GRUB程序加载执行并引导kernel（内核）程序，其中有三个阶段。</p>
+<p>　　grub引导阶段的文件都在/boot/grub/目录下</p>
+<p>(1).Stage1阶段</p>
+<p>　　这一阶段其实执行的就是系统安装时预先写入到MBR的Bootloader程序。它的任务仅是读取（加载）硬盘的0柱面，0磁道，2扇区的内容（/boot/grub/stage1）并执行。</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_745799" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10734202.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@CentOS6 ~]# ll /boot/grub/stage1 </code></div><div class="line number2 index1 alt1"><code class="csharp plain">-rw-r--r--. 1 root root 512 Mar 13&nbsp; 2018 /boot/grub/stage1</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p>　　这一阶段，使硬件初始化，为Stage2准备RAM空间（内存空间），读取Stage2到RAM空间（应该涉及到了Stage1.5阶段）。就是Stage1.5阶段或Stage2阶段的入口，引导进入Stage1.5阶段或Stage2阶段。</p>
+<p>　　另外，这一阶段并没有识别文件系统的能力。　　</p>
+<p>(2).Stage1.5阶段</p>
+<p>　　这一阶段是Stage1阶段和Stage2阶段的桥梁，具有识别分区文件系统的能力，此后grub程序便有能力去访问/boot/grub/stage2，并将其读取到内存执行。</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_761312" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10734202.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@CentOS6 ~]# ll -h /boot/grub/stage2　　</code><code class="csharp comments">//大于512字节了</code></div><div class="line number2 index1 alt1"><code class="csharp plain">-rw-r--r--. 1 root root 124K Mar 21&nbsp; 2018 /boot/grub/stage2</code></div><div class="line number3 index2 alt2"><code class="csharp plain">[root@CentOS6 ~]# ls /boot/grub/*stage1_5　　</code><code class="csharp comments">//有各种文件系统格式</code></div><div class="line number4 index3 alt1"><code class="csharp plain">/boot/grub/e2fs_stage1_5&nbsp;&nbsp;&nbsp;&nbsp; /boot/grub/minix_stage1_5</code></div><div class="line number5 index4 alt2"><code class="csharp plain">/boot/grub/fat_stage1_5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /boot/grub/reiserfs_stage1_5</code></div><div class="line number6 index5 alt1"><code class="csharp plain">/boot/grub/ffs_stage1_5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /boot/grub/ufs2_stage1_5</code></div><div class="line number7 index6 alt2"><code class="csharp plain">/boot/grub/iso9660_stage1_5&nbsp; /boot/grub/vstafs_stage1_5</code></div><div class="line number8 index7 alt1"><code class="csharp plain">/boot/grub/jfs_stage1_5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /boot/grub/xfs_stage1_5</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p>(3).Stage2阶段</p>
+<p>　　这一阶段会（初始化本阶段需要用到的硬件，检测系统的内存映像，）解析grub的配置文件/boot/grub/grub.cnf，根据配置文件加载内核镜像到内存中，通过initrd程序建立虚拟根文件系统，最后调用（转交）内核</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_393908" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10734202.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@CentOS6 ~]# cat /boot/grub/grub.conf </code></div><div class="line number2 index1 alt1"><code class="csharp preprocessor"># grub.conf generated by anaconda</code></div><div class="line number3 index2 alt2"><code class="csharp preprocessor">#</code></div><div class="line number4 index3 alt1"><code class="csharp preprocessor"># Note that you do not have to rerun grub after making changes to this file</code></div><div class="line number5 index4 alt2"><code class="csharp preprocessor"># NOTICE:&nbsp; You have a /boot partition.&nbsp; This means that</code></div><div class="line number6 index5 alt1"><code class="csharp preprocessor">#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; all kernel and initrd paths are relative to /boot/, eg.</code></div><div class="line number7 index6 alt2"><code class="csharp preprocessor">#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; root (hd0,0)</code></div><div class="line number8 index7 alt1"><code class="csharp preprocessor">#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; kernel /vmlinuz-version ro root=/dev/mapper/vg_centos6-lv_root</code></div><div class="line number9 index8 alt2"><code class="csharp preprocessor">#&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; initrd /initrd-[generic-]version.img</code></div><div class="line number10 index9 alt1"><code class="csharp preprocessor">#boot=/dev/sda</code></div><div class="line number11 index10 alt2"><code class="csharp keyword">default</code><code class="csharp plain">=0　　</code><code class="csharp comments">//设置默认启动项为第一个内核</code></div><div class="line number12 index11 alt1"><code class="csharp plain">timeout=5　　</code><code class="csharp comments">//菜单项等待选项时间为5秒</code></div><div class="line number13 index12 alt2"><code class="csharp plain">splashimage=(hd0,0)/grub/splash.xpm.gz　　</code><code class="csharp comments">//菜单背景图片</code></div><div class="line number14 index13 alt1"><code class="csharp plain">hiddenmenu　　</code><code class="csharp comments">//隐藏菜单</code></div><div class="line number15 index14 alt2"><code class="csharp comments">//这里有时候会有passwrod参数，意思是进入急救模式（单用户模式）的密码是多少，可以是明文密码，可以是加密密码</code></div><div class="line number16 index15 alt1"><code class="csharp comments">//例如password --md5 $1$1S9Xy$1MuGZSoPc2vAtkW.jvz0X/，这代表进入急救模式的password经过MD5加密，加密密码为$1$1S9Xy$1MuGZSoPc2vAtkW.jvz0X/</code></div><div class="line number17 index16 alt2"><code class="csharp plain">title CentOS 6 (2.6.32-642.el6.x86_64)　　</code><code class="csharp comments">//菜单项名称</code></div><div class="line number18 index17 alt1"><code class="csharp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="csharp plain">root (hd0,0)　　</code><code class="csharp comments">//grub查找stage2文件及kernel文件所在设备分区，grub的根。第一块硬盘的第一个分区</code></div><div class="line number19 index18 alt2"><code class="csharp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="csharp comments">//启动的内核</code></div><div class="line number20 index19 alt1"><code class="csharp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="csharp plain">kernel /vmlinuz-2.6.32-642.el6.x86_64 ro root=/dev/mapper/vg_centos6-lv_root rd_NO_LUKS rd_NO_MD rd_LVM_LV=vg_centos6/lv_swap crashkernel=128M LANG=zh_CN.UTF-8 rd_LVM_LV=vg_centos6/lv_root&nbsp; KEYBOARDTYPE=pc KEYTABLE=us rd_NO_DM rhgb quiet</code></div><div class="line number21 index20 alt2"><code class="csharp spaces">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</code><code class="csharp plain">initrd /initramfs-2.6.32-642.el6.x86_64.img　　</code><code class="csharp comments">//内核匹配的ramfs文件，img是镜像文件</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p><span style="font-size: 14pt"><strong>第三步、内核引导阶段</strong></span></p>
+<p><img src="./CentOS6启动流程_files/949069-20190420132424617-2017199430.png" alt=""></p>
+<p>　　简单说一下这一步的流程：通过内存中的虚拟根文件系统，加载驱动，然后切换到真正的根文件系统，并执行/sbin/init程序。</p>
+<p><span style="font-size: 14pt"><strong>第四步、init初始化阶段（又叫系统初始化阶段）</strong></span></p>
+<p><img src="./CentOS6启动流程_files/949069-20190420135054505-569561586.png" alt=""></p>
+<p>　　简单说一下这一步的流程：/sbin/init程序会读取/etc/inittab文件确认运行级别，然后执行/etc/rc.d/rc脚本，根据确认的运行级别启动对应/etc/rc.d/rc#.d/目录下的服务（#为0~6），与此同时执行系统初始化脚本/etc/rc.sysinit（软链接，指向/etc/rc.d/rc.sysinit），还会加载/etc/rc.local（软链接，指向/etc/rc.d/rc.local文件）用户自定义服务（脚本）。</p>
+<p>　　这里有个有意思的地方，/etc/rc.d/目录下的文件几乎在上一次都有相应的软链接（也就是/etc/目录下），唯一没有的/etc/rc.d/init.d/目录又似乎与/etc/init.d/目录完全相同</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_951336" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10734202.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@CentOS6 ~]# ls -ld /etc/rc*</code></div><div class="line number2 index1 alt1"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp;&nbsp; 7 Mar 13&nbsp; 2018 /etc/rc -&gt; rc.d/rc</code></div><div class="line number3 index2 alt2"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp; 10 Mar 13&nbsp; 2018 /etc/rc0.d -&gt; rc.d/rc0.d</code></div><div class="line number4 index3 alt1"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp; 10 Mar 13&nbsp; 2018 /etc/rc1.d -&gt; rc.d/rc1.d</code></div><div class="line number5 index4 alt2"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp; 10 Mar 13&nbsp; 2018 /etc/rc2.d -&gt; rc.d/rc2.d</code></div><div class="line number6 index5 alt1"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp; 10 Mar 13&nbsp; 2018 /etc/rc3.d -&gt; rc.d/rc3.d</code></div><div class="line number7 index6 alt2"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp; 10 Mar 13&nbsp; 2018 /etc/rc4.d -&gt; rc.d/rc4.d</code></div><div class="line number8 index7 alt1"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp; 10 Mar 13&nbsp; 2018 /etc/rc5.d -&gt; rc.d/rc5.d</code></div><div class="line number9 index8 alt2"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp; 10 Mar 13&nbsp; 2018 /etc/rc6.d -&gt; rc.d/rc6.d</code></div><div class="line number10 index9 alt1"><code class="csharp plain">drwxr-xr-x. 10 root root 4096 Feb 18 02:17 /etc/rc.d</code></div><div class="line number11 index10 alt2"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp; 13 Mar 13&nbsp; 2018 /etc/rc.local -&gt; rc.d/rc.local</code></div><div class="line number12 index11 alt1"><code class="csharp plain">lrwxrwxrwx.&nbsp; 1 root root&nbsp;&nbsp; 15 Mar 13&nbsp; 2018 /etc/rc.sysinit -&gt; rc.d/rc.sysinit</code></div><div class="line number13 index12 alt2"><code class="csharp plain">[root@CentOS6 ~]# ls /etc/rc.d/</code></div><div class="line number14 index13 alt1"><code class="csharp plain">init.d&nbsp; rc0.d&nbsp; rc2.d&nbsp; rc4.d&nbsp; rc6.d&nbsp;&nbsp;&nbsp;&nbsp; rc.sysinit</code></div><div class="line number15 index14 alt2"><code class="csharp plain">rc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rc1.d&nbsp; rc3.d&nbsp; rc5.d&nbsp; rc.local</code></div><div class="line number16 index15 alt1"><code class="csharp plain">[root@CentOS6 ~]# diff -ruNa /etc/rc.d/init.d/ /etc/init.d/</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p>(1)./etc/inittab文件</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_173613" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10734202.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div><div class="line number23 index22 alt2">23</div><div class="line number24 index23 alt1">24</div><div class="line number25 index24 alt2">25</div><div class="line number26 index25 alt1">26</div><div class="line number27 index26 alt2">27</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@CentOS6 ~]# cat /etc/inittab </code></div><div class="line number2 index1 alt1"><code class="csharp preprocessor"># inittab is only used by upstart for the default runlevel.</code></div><div class="line number3 index2 alt2"><code class="csharp preprocessor">#</code></div><div class="line number4 index3 alt1"><code class="csharp preprocessor"># ADDING OTHER CONFIGURATION HERE WILL HAVE NO EFFECT ON YOUR SYSTEM.</code></div><div class="line number5 index4 alt2"><code class="csharp preprocessor">#</code></div><div class="line number6 index5 alt1"><code class="csharp preprocessor"># System initialization is started by /etc/init/rcS.conf</code></div><div class="line number7 index6 alt2"><code class="csharp preprocessor">#</code></div><div class="line number8 index7 alt1"><code class="csharp preprocessor"># Individual runlevels are started by /etc/init/rc.conf</code></div><div class="line number9 index8 alt2"><code class="csharp preprocessor">#</code></div><div class="line number10 index9 alt1"><code class="csharp preprocessor"># Ctrl-Alt-Delete is handled by /etc/init/control-alt-delete.conf</code></div><div class="line number11 index10 alt2"><code class="csharp preprocessor">#</code></div><div class="line number12 index11 alt1"><code class="csharp preprocessor"># Terminal gettys are handled by /etc/init/tty.conf and /etc/init/serial.conf,</code></div><div class="line number13 index12 alt2"><code class="csharp preprocessor"># with configuration in /etc/sysconfig/init.</code></div><div class="line number14 index13 alt1"><code class="csharp preprocessor">#</code></div><div class="line number15 index14 alt2"><code class="csharp preprocessor"># For information on how to write upstart event handlers, or how</code></div><div class="line number16 index15 alt1"><code class="csharp preprocessor"># upstart works, see init(5), init(8), and initctl(8).</code></div><div class="line number17 index16 alt2"><code class="csharp preprocessor">#</code></div><div class="line number18 index17 alt1"><code class="csharp preprocessor"># Default runlevel. The runlevels used are:</code></div><div class="line number19 index18 alt2"><code class="csharp preprocessor">#&nbsp;&nbsp; 0 - halt (Do NOT set initdefault to this)</code></div><div class="line number20 index19 alt1"><code class="csharp preprocessor">#&nbsp;&nbsp; 1 - Single user mode</code></div><div class="line number21 index20 alt2"><code class="csharp preprocessor">#&nbsp;&nbsp; 2 - Multiuser, without NFS (The same as 3, if you do not have networking)</code></div><div class="line number22 index21 alt1"><code class="csharp preprocessor">#&nbsp;&nbsp; 3 - Full multiuser mode</code></div><div class="line number23 index22 alt2"><code class="csharp preprocessor">#&nbsp;&nbsp; 4 - unused</code></div><div class="line number24 index23 alt1"><code class="csharp preprocessor">#&nbsp;&nbsp; 5 - X11</code></div><div class="line number25 index24 alt2"><code class="csharp preprocessor">#&nbsp;&nbsp; 6 - reboot (Do NOT set initdefault to this)</code></div><div class="line number26 index25 alt1"><code class="csharp preprocessor"># </code></div><div class="line number27 index26 alt2"><code class="csharp plain">id:5:initdefault:</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p>　　这个文件直接看最后一行的那个数字就好了，我这里是5，就代表启动级别是5。</p>
+<p>　　另外，还需要了解下系统的启动级别：</p>
+<p>　　　　0　　关机</p>
+<p>　　　　1　　单用户模式、维护模式、急救模式，都可以</p>
+<p>　　　　2　　多用户模式，但没有网络</p>
+<p>　　　　3　　完整的多用户模式</p>
+<p>　　　　4　　预留级别，暂时没用，不用考虑</p>
+<p>　　　　5　　图形界面，XWindows</p>
+<p>　　　　6　　重启</p>
+<p>(2)./etc/rc.d/rc#.d/目录</p>
+<p>　　在启动时执行的/etc/rc.d/rc脚本，会调用/etc/rc.d/rc#.d/目录下的文件</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_722036" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10734202.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@CentOS6 ~]# ls /etc/rc.d/rc5.d/</code></div><div class="line number2 index1 alt1"><code class="csharp plain">K01smartd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K50dnsmasq&nbsp;&nbsp;&nbsp;&nbsp; K73winbind&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K88sssd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S01sysstat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S12rsyslog&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S24nfslock&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S26udev-post&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S82abrt-ccpp</code></div><div class="line number3 index2 alt2"><code class="csharp plain">K02oddjobd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K50xinetd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K74ntpd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K89netconsole&nbsp;&nbsp;&nbsp; S02lvm2-monitor&nbsp; S13cpuspeed&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S24rpcgssd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S28autofs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S82abrtd</code></div><div class="line number4 index3 alt1"><code class="csharp plain">K05wdaemon&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K60nfs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K75ntpdate&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K89rdisc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S08ip6tables&nbsp;&nbsp;&nbsp;&nbsp; S13irqbalance&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S25blk-availability&nbsp; S50bluetooth&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S90crond</code></div><div class="line number5 index4 alt2"><code class="csharp plain">K10psacct&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K61nfs-rdma&nbsp;&nbsp;&nbsp; K75quota_nld&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K92pppoe-server&nbsp; S08iptables&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S13rpcbind&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S25cups&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S50kdump&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S95atd</code></div><div class="line number6 index5 alt1"><code class="csharp plain">K10saslauthd&nbsp;&nbsp;&nbsp;&nbsp; K69rpcsvcgssd&nbsp; K76ypbind&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K95firstboot&nbsp;&nbsp;&nbsp;&nbsp; S10network&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S15mdmonitor&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S25netfs&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S55sshd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S99certmonger</code></div><div class="line number7 index6 alt2"><code class="csharp plain">K15htcacheclean&nbsp; K71cgred&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K84wpa_supplicant&nbsp; K95rdma&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S11auditd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S22messagebus&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S26acpid&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S70spice-vdagentd&nbsp; S99local</code></div><div class="line number8 index7 alt1"><code class="csharp plain">K15httpd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; K72cgconfig&nbsp;&nbsp;&nbsp; K87restorecond&nbsp;&nbsp;&nbsp;&nbsp; K99rngd&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S11portreserve&nbsp;&nbsp; S23NetworkManager&nbsp; S26haldaemon&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S80postfix</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p>　　K开头的文件：要停止的服务（脚本），从01开始关闭，数字越小越优先关闭</p>
+<p>　　S开头的文件：要启动的服务（脚本），从01开始启动，数字越小越优先启动</p>
+<p>　　这些文件其实都是软链接，指向的都是/etc/rc.d/init.d/目录下的文件</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_492195" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10734202.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@CentOS6 ~]# ll /etc/rc.d/rc5.d/K01smartd </code></div><div class="line number2 index1 alt1"><code class="csharp plain">lrwxrwxrwx. 1 root root 16 Mar 13&nbsp; 2018 /etc/rc.d/rc5.d/K01smartd -&gt; ../init.d/smartd</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p><span style="font-size: 14pt"><strong>第五步、启动终端</strong></span></p>
+<p><img src="./CentOS6启动流程_files/949069-20190420135218340-1470192799.png" alt=""></p>
+<p>　　最后一步就是用户登录了，没什么说的。</p>
+
+
+
+
+
+</div>
+<div id="MySignature"></div>
+<div class="clear"></div>
+
+            </div>
+            
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+<script src="./CentOS6启动流程_files/highlight.min.js.下载"></script>
+<script>markdown_highlight();</script>
+<script>
+    var allowComments = true, cb_blogId = 288663, cb_blogApp = 'diantong', cb_blogUserGuid = '08040bfd-0411-e611-9fc1-ac853d9f53cc';
+    var cb_entryId = 10734202, cb_entryCreatedDate = '2019-04-20 17:05', cb_postType = 1;
+    updatePostStats(
+        [cb_entryId],
+        function(id, count) { $("#post_view_count").text(count) },
+        function(id, count) { $("#post_comment_count").text(count) })
+</script>
+<a name="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+
+
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+	<!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+    
+
+
+<iframe id="google_osd_static_frame_8707529834710" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;" src="./CentOS6启动流程_files/saved_resource.html"></iframe><div class="xl-chrome-ext-bar" id="xl_chrome_ext_{4DB361DE-01F7-4376-B494-639E489D19ED}" style="display: none;">
+      <div class="xl-chrome-ext-bar__logo"></div>
+
+      <a id="xl_chrome_ext_download" href="javascript:;" class="xl-chrome-ext-bar__option">下载视频</a>
+      <a id="xl_chrome_ext_close" href="javascript:;" class="xl-chrome-ext-bar__close"></a>
+    </div></body></html>

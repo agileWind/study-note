@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!-- saved from url=(0048)https://www.cnblogs.com/diantong/p/10745372.html -->
+<html lang="zh-cn"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="origin">
+    <meta name="description" content="同样我也找了一张CentOS7的启动流程图。 第一步、硬件启动阶段 这一步和CentOS6差不多，详细请看CentOS6启动流程（含详细流程图） 第二步、GRUB2引导阶段 从这一步开始，CentOS">
+    <meta property="og:description" content="同样我也找了一张CentOS7的启动流程图。 第一步、硬件启动阶段 这一步和CentOS6差不多，详细请看CentOS6启动流程（含详细流程图） 第二步、GRUB2引导阶段 从这一步开始，CentOS">
+    <meta http-equiv="Cache-Control" content="no-transform">
+    <meta http-equiv="Cache-Control" content="no-siteapp">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>CentOS7启动流程</title>
+    <link id="favicon" rel="shortcut icon" href="https://common.cnblogs.com/favicon.svg" type="image/svg+xml">
+    
+    <link rel="stylesheet" href="./CentOS7启动流程_files/blog-common.min.css">
+    <link id="MainCss" rel="stylesheet" href="./CentOS7启动流程_files/bundle-red_autumnal_leaves.min.css">
+    
+    <link id="mobile-style" media="only screen and (max-width: 767px)" type="text/css" rel="stylesheet" href="./CentOS7启动流程_files/bundle-red_autumnal_leaves-mobile.min.css">
+    
+    <link type="application/rss+xml" rel="alternate" href="https://www.cnblogs.com/diantong/rss">
+    <link type="application/rsd+xml" rel="EditURI" href="https://www.cnblogs.com/diantong/rsd.xml">
+    <link type="application/wlwmanifest+xml" rel="wlwmanifest" href="https://www.cnblogs.com/diantong/wlwmanifest.xml">
+    <script src="./CentOS7启动流程_files/osd.js.下载"></script><script async="" src="./CentOS7启动流程_files/analytics.js.下载"></script><script>
+        var currentBlogId = 288663;
+        var currentBlogApp = 'diantong';
+        var cb_enable_mathjax = false;
+        var isLogined = false;
+        var isBlogOwner = false;
+        var skinName = 'red_autumnal_leaves';
+        var visitorUserId = '';
+    </script>
+        <script>
+            var currentPostDateAdded = '2019-04-21 11:36';
+        </script>
+    <script src="./CentOS7启动流程_files/jquery-2.2.0.min.js.下载"></script>
+    <script src="./CentOS7启动流程_files/blog-common.min.js.下载"></script>
+    
+    
+    
+<meta http-equiv="origin-trial" content="A9ZgbRtm4pU3oZiuNzOsKcC8ppFSZdcjP2qYcdQrFKVzkmiWH1kdYY1Mi9x7G8+PS8HV9Ha9Cz0gaMdKsiVZIgMAAAB7eyJvcmlnaW4iOiJodHRwczovL2RvdWJsZWNsaWNrLm5ldDo0NDMiLCJmZWF0dXJlIjoiVHJ1c3RUb2tlbnMiLCJleHBpcnkiOjE2MjYyMjA3OTksImlzU3ViZG9tYWluIjp0cnVlLCJpc1RoaXJkUGFydHkiOnRydWV9"><meta http-equiv="origin-trial" content="A3HucHUo1oW9s+9kIKz8mLkbcmdaj5lxt3eiIMp1Nh49dkkBlg1Fhg4Fd/r0vL69mRRA36YutI9P/lJUfL8csQoAAACFeyJvcmlnaW4iOiJodHRwczovL2RvdWJsZWNsaWNrLm5ldDo0NDMiLCJmZWF0dXJlIjoiQ29udmVyc2lvbk1lYXN1cmVtZW50IiwiZXhwaXJ5IjoxNjI2MjIwNzk5LCJpc1N1YmRvbWFpbiI6dHJ1ZSwiaXNUaGlyZFBhcnR5Ijp0cnVlfQ=="><script src="./CentOS7启动流程_files/pubads_impl_2021021101.js.下载" async=""></script><link rel="preload" href="./CentOS7启动流程_files/f.txt" as="script"><script type="text/javascript" src="./CentOS7启动流程_files/f.txt"></script><link rel="prefetch" href="https://30abff85f69c17c67414f4d47307eb7e.safeframe.googlesyndication.com/safeframe/1-0-37/html/container.html"><link rel="prefetch" href="https://tpc.googlesyndication.com/safeframe/1-0-37/html/container.html"><style id="__web-inspector-hide-shortcut-style__">
+.__web-inspector-hide-shortcut__, .__web-inspector-hide-shortcut__ *, .__web-inspector-hidebefore-shortcut__::before, .__web-inspector-hideafter-shortcut__::after
+{
+    visibility: hidden !important;
+}
+</style></head>
+<body class="has-navbar">
+    
+    
+
+    
+    <!--done-->
+<div id="home">
+<!--end: header 头部 -->
+<div id="main">
+	<div id="mainContent">
+	<div class="forFlow">
+		<div id="post_detail">
+    <!--done-->
+    <div id="topics">
+        <div class="post">
+            <h1 class="postTitle">
+                
+<a id="cb_post_title_url" class="postTitle2 vertical-middle" href="https://www.cnblogs.com/diantong/p/10745372.html">
+    <span>CentOS7启动流程</span>
+    
+
+
+</a>
+
+            </h1>
+            <div class="clear"></div>
+            <div class="postBody">
+                
+<div id="cnblogs_post_body" class="blogpost-body">
+    <p>　　同样我也找了一张CentOS7的启动流程图。</p>
+<p><img src="./CentOS7启动流程_files/949069-20190421160331677-268089991.png" alt=""></p>
+<p><span style="font-size: 14pt"><strong>第一步、硬件启动阶段</strong></span></p>
+<p>　　这一步和CentOS6差不多，详细请看<span style="font-size: 18pt"><a id="cb_post_title_url" class="postTitle2" href="https://www.cnblogs.com/diantong/p/10734202.html">CentOS6启动流程（含详细流程图）</a></span></p>
+<p><strong><span style="font-size: 14pt">第二步、GRUB2引导阶段</span></strong></p>
+<p>　　从这一步开始，CentOS6和CentOS7的启动流程区别开始展现出来了。CentOS7的主引导程序使用的是grub2。</p>
+<p>　　简单说一下这一步的流程：显示加载两个镜像，再加载MOD模块文件，把grub2程序加载执行，接着解析配置文件/boot/grub/grub.cfg，根据配置文件加载内核镜像到内存，之后构建虚拟根文件系统，最后转到内核。</p>
+<p>　　在这里grub.cfg配置文件已经比较复杂了，但并不用担心，到了CentOS7中一般是使用命令进行配置，而不直接去修改配置文件了。不过我们可以看到grub.cfg配置文件开头注释部分说明了由<span style="color: rgba(255, 0, 0, 1)">/etc/grub.d/目录下文件和/etc/default/grub文件</span>组成。</p>
+<p>　　一般修改好配置后都需要使用命令grub2-mkconfig -o /boot/grub2/grub.cfg，将配置文件重新生成。</p>
+<p><span style="font-size: 14pt"><strong>第三步、内核引导阶段</strong></span></p>
+<p>　　这一步与CentOS6也差不多，加载驱动，切换到真正的根文件系统，唯一不同的是执行的初始化程序变成了/usr/lib/systemd/systemd</p>
+<p><span style="font-size: 14pt"><strong>第四步、systemed初始化阶段（又叫系统初始化阶段）</strong></span></p>
+<p>　　CentOS7中我们的初始化进程变为了systemd。执行默认target配置文件/etc/systemd/system/default.target（这是一个软链接，与默认运行级别有关）。然后执行sysinit.target来初始化系统和basic.target来准备操作系统。接着启动multi-user.target下的本机与服务器服务，并检查/etc/rc.d/rc.local文件是否有用户自定义脚本需要启动。最后执行multi-user下的getty.target及登录服务，检查default.target是否有其他的服务需要启动。</p>
+<p>　　<span style="color: rgba(255, 0, 0, 1)">注意：/etc/systemd/system/default.target指向了/lib/systemd/system/目录下的graphical.target或multiuser.target。而graphical.target依赖multiuser.target，multiuser.target依赖basic.target，basic.target依赖sysinit.target，所以倒过来执行。</span></p>
+<p>　　System概述（了解）：systemd即为system daemon，是Linux下的一种init软件，开发目标是提供更优秀的框架以表示系统服务间的以来关系，并依此实现系统初始化时服务的并行启动，同时达到降低Shell系统开销的效果，最终代替现在常用的System V与BSD风格的init程序。</p>
+<p>　　与多数发行版使用的System V风格的init相比，systemd采用了以下的新技术：A.采用Socket激活式与总线激活式服务，以提高相互依赖的各服务的并行运行性能；B.用Cgroup代替PID来追踪进程，即使是两次fork之后生成的守护进程也不会脱离systemd的控制。</p>
+<p>　　<span style="color: rgba(255, 0, 0, 1)">unit对象</span>：unit表示不同类型的systemd对象，通过配置文件进行标识和配置；文件中主要包含了系统服务、监听socket、保存的系统快照以及其他与init相关的信息。（也就是CentOS6中的服务器启动脚本）</p>
+<p>(1)./etc/systemd/system/default.target</p>
+<p>　　这是一个软链接，和默认运行级别相关</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_576096" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10745372.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@xuexi system]# ll /etc/systemd/system/</code><code class="csharp keyword">default</code><code class="csharp plain">.target</code></div><div class="line number2 index1 alt1"><code class="csharp plain">lrwxrwxrwx. 1 root root 36 12月&nbsp; 9 15:47 /etc/systemd/system/</code><code class="csharp keyword">default</code><code class="csharp plain">.target -&gt; /lib/systemd/system/graphical.target</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p>　　我们可以到这个目录下看看</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_629552" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10745372.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div><div class="line number9 index8 alt2">9</div><div class="line number10 index9 alt1">10</div><div class="line number11 index10 alt2">11</div><div class="line number12 index11 alt1">12</div><div class="line number13 index12 alt2">13</div><div class="line number14 index13 alt1">14</div><div class="line number15 index14 alt2">15</div><div class="line number16 index15 alt1">16</div><div class="line number17 index16 alt2">17</div><div class="line number18 index17 alt1">18</div><div class="line number19 index18 alt2">19</div><div class="line number20 index19 alt1">20</div><div class="line number21 index20 alt2">21</div><div class="line number22 index21 alt1">22</div><div class="line number23 index22 alt2">23</div><div class="line number24 index23 alt1">24</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@xuexi system]# cd /lib/systemd/system/</code></div><div class="line number2 index1 alt1"><code class="csharp plain">[root@xuexi system]# ls *.target</code></div><div class="line number3 index2 alt2"><code class="csharp plain">anaconda.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; local-fs.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; runlevel2.target</code></div><div class="line number4 index3 alt1"><code class="csharp plain">basic.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; machines.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; runlevel3.target</code></div><div class="line number5 index4 alt2"><code class="csharp plain">bluetooth.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; multi-user.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; runlevel4.target</code></div><div class="line number6 index5 alt1"><code class="csharp plain">cryptsetup-pre.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; network-online.target&nbsp;&nbsp;&nbsp;&nbsp; runlevel5.target</code></div><div class="line number7 index6 alt2"><code class="csharp plain">cryptsetup.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; network-pre.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; runlevel6.target</code></div><div class="line number8 index7 alt1"><code class="csharp plain">ctrl-alt-del.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; network.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shutdown.target</code></div><div class="line number9 index8 alt2"><code class="csharp keyword">default</code><code class="csharp plain">.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nfs-client.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sigpwr.target</code></div><div class="line number10 index9 alt1"><code class="csharp plain">emergency.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nss-lookup.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sleep.target</code></div><div class="line number11 index10 alt2"><code class="csharp plain">final.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nss-user-lookup.target&nbsp;&nbsp;&nbsp; slices.target</code></div><div class="line number12 index11 alt1"><code class="csharp plain">getty-pre.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; paths.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; smartcard.target</code></div><div class="line number13 index12 alt2"><code class="csharp plain">getty.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; poweroff.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sockets.target</code></div><div class="line number14 index13 alt1"><code class="csharp plain">graphical.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printer.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sound.target</code></div><div class="line number15 index14 alt2"><code class="csharp plain">halt.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rdma-hw.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; suspend.target</code></div><div class="line number16 index15 alt1"><code class="csharp plain">hibernate.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; reboot.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; swap.target</code></div><div class="line number17 index16 alt2"><code class="csharp plain">hybrid-sleep.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; remote-cryptsetup.target&nbsp; sysinit.target</code></div><div class="line number18 index17 alt1"><code class="csharp plain">initrd-fs.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; remote-fs-pre.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; system-update.target</code></div><div class="line number19 index18 alt2"><code class="csharp plain">initrd-root-fs.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; remote-fs.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; timers.target</code></div><div class="line number20 index19 alt1"><code class="csharp plain">initrd-</code><code class="csharp keyword">switch</code><code class="csharp plain">-root.target&nbsp; rescue.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; time-sync.target</code></div><div class="line number21 index20 alt2"><code class="csharp plain">initrd.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rpcbind.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; umount.target</code></div><div class="line number22 index21 alt1"><code class="csharp plain">iprutils.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; rpc_pipefs.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; virt-guest-shutdown.target</code></div><div class="line number23 index22 alt2"><code class="csharp plain">kexec.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; runlevel0.target</code></div><div class="line number24 index23 alt1"><code class="csharp plain">local-fs-pre.target&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; runlevel1.target</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p>　　这里可以看到runlevel开头的target文件，对应着CentOS6的启动级别，不过一样是软链接，指向了同目录下的其他文件，也算一种向下兼容吧</p>
+<div class="cnblogs_Highlighter sh-gutter">
+<div><div id="highlighter_98888" class="syntaxhighlighter  csharp"><div class="toolbar"><span><a href="https://www.cnblogs.com/diantong/p/10745372.html#" class="toolbar_item command_help help">?</a></span></div><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td class="gutter"><div class="line number1 index0 alt2">1</div><div class="line number2 index1 alt1">2</div><div class="line number3 index2 alt2">3</div><div class="line number4 index3 alt1">4</div><div class="line number5 index4 alt2">5</div><div class="line number6 index5 alt1">6</div><div class="line number7 index6 alt2">7</div><div class="line number8 index7 alt1">8</div></td><td class="code"><div class="container"><div class="line number1 index0 alt2"><code class="csharp plain">[root@xuexi system]# ll runlevel*.target</code></div><div class="line number2 index1 alt1"><code class="csharp plain">lrwxrwxrwx. 1 root root 15 4月&nbsp;&nbsp; 5 22:10 runlevel0.target -&gt; poweroff.target</code></div><div class="line number3 index2 alt2"><code class="csharp plain">lrwxrwxrwx. 1 root root 13 4月&nbsp;&nbsp; 5 22:10 runlevel1.target -&gt; rescue.target</code></div><div class="line number4 index3 alt1"><code class="csharp plain">lrwxrwxrwx. 1 root root 17 4月&nbsp;&nbsp; 5 22:10 runlevel2.target -&gt; multi-user.target</code></div><div class="line number5 index4 alt2"><code class="csharp plain">lrwxrwxrwx. 1 root root 17 4月&nbsp;&nbsp; 5 22:10 runlevel3.target -&gt; multi-user.target</code></div><div class="line number6 index5 alt1"><code class="csharp plain">lrwxrwxrwx. 1 root root 17 4月&nbsp;&nbsp; 5 22:10 runlevel4.target -&gt; multi-user.target</code></div><div class="line number7 index6 alt2"><code class="csharp plain">lrwxrwxrwx. 1 root root 16 4月&nbsp;&nbsp; 5 22:10 runlevel5.target -&gt; graphical.target</code></div><div class="line number8 index7 alt1"><code class="csharp plain">lrwxrwxrwx. 1 root root 13 4月&nbsp;&nbsp; 5 22:10 runlevel6.target -&gt; reboot.target</code></div></div></td></tr></tbody></table></div></div>
+</div>
+<p>　　可以看到我的default.target与runlevel5.target指向的是同一个文件，可以看出我的默认运行级别是5。</p>
+<p>(2)./usr/lib/systemd/system/</p>
+<p>　　这个目录存储每个服务的脚本，类似CentOS6的/etc/init.d/。</p>
+<p>(2)./run/systemd/system/</p>
+<p>　　系统执行过程中产生的脚本。</p>
+<p>(3)./etc/systemd/system/</p>
+<p>　　类似于CentOS6的/etc/rc.d/rc#.d/SXX类文件的功能，管理员建立的执行脚本，大部分是软链接。</p>
+</div>
+<div id="MySignature"></div>
+<div class="clear"></div>
+
+            </div>
+            
+        </div>
+	    
+	    
+    </div><!--end: topics 文章、评论容器-->
+</div>
+<script src="./CentOS7启动流程_files/highlight.min.js.下载"></script>
+<script>markdown_highlight();</script>
+<script>
+    var allowComments = true, cb_blogId = 288663, cb_blogApp = 'diantong', cb_blogUserGuid = '08040bfd-0411-e611-9fc1-ac853d9f53cc';
+    var cb_entryId = 10745372, cb_entryCreatedDate = '2019-04-21 23:36', cb_postType = 1;
+    updatePostStats(
+        [cb_entryId],
+        function(id, count) { $("#post_view_count").text(count) },
+        function(id, count) { $("#post_comment_count").text(count) })
+</script>
+<a name="!comments"></a>
+<div id="blog-comments-placeholder"></div>
+
+
+	</div><!--end: forFlow -->
+	</div><!--end: mainContent 主体内容容器-->
+	<!--end: sideBar 侧边栏容器 -->
+	<div class="clear"></div>
+	</div><!--end: main -->
+	<div class="clear"></div>
+	<!--end: footer -->
+</div><!--end: home 自定义的最大容器 -->
+
+
+    
+
+
+<iframe id="google_osd_static_frame_368235338852" name="google_osd_static_frame" style="display: none; width: 0px; height: 0px;" src="./CentOS7启动流程_files/saved_resource.html"></iframe><div class="xl-chrome-ext-bar" id="xl_chrome_ext_{4DB361DE-01F7-4376-B494-639E489D19ED}" style="display: none;">
+      <div class="xl-chrome-ext-bar__logo"></div>
+
+      <a id="xl_chrome_ext_download" href="javascript:;" class="xl-chrome-ext-bar__option">下载视频</a>
+      <a id="xl_chrome_ext_close" href="javascript:;" class="xl-chrome-ext-bar__close"></a>
+    </div></body></html>
