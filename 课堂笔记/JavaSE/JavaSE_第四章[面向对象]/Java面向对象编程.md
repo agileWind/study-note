@@ -2472,6 +2472,8 @@ class GoodsComparator implements Comparator {
 * 局部内部类只有final ，abstract这两个词修饰
 * 局部内部类无法在外部类的其他成员中使用
 
+内部类是延时加载的，也就是说只会在第一次使用时加载。不使用就不加
+
 ```java
 public class InnerClassTest {
     public static void main(String[] args) {
