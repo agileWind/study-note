@@ -3521,7 +3521,7 @@ ip a
 查看指定服务
 
 查看指定名称的进程
-ps -ef | grep nginx
+ps -ef | grep 进程名称
 
 查看指定端口
 
@@ -3531,3 +3531,5 @@ ps -ef | grep nginx
 
 查看防火墙端口打开状态
 
+强制终止进程
+kill -9 进程名

@@ -58,15 +58,15 @@ class 类{
 
 * javac -d 文件夹路径 源代码名.java，这个命令可以指定编译后的文件放在哪里，javac -d . ChairMan.java表示放在与ChairMan.java相同的父目录下，当然这也不是绝对的正确说法，仅仅只是在没有指定包名的情况下，如果有包名，则会在这个源代码文件夹下建立包名文件夹，然后把class文件放在包名文件夹下
 
-```text
-//如果包名a.b,，两组命令对应为
-javac -d . ChairMan.java
-java a.b.ChairMan
+  ```bash
+  #如果包名a.b,，两组命令对应为
+  javac -d . ChairMan.java
+  java a.b.ChairMan
 
-//如果包名为a.b,想把class放在源代码文件下相同位置，则
-javac -d ../../ ChairMan.java
-java -cp ../../ a.b.ChairMan
-```
+  #如果包名为a.b,想把class放在源代码文件下相同位置，则
+  javac -d ../../ ChairMan.java
+  java -cp ../../ a.b.ChairMan
+  ```
 
 * 有些IDE工具有自己设定的源代码文件夹结构和预设的编译后class文件放置的文件夹地址，如果将这些源代码文件拿来在命令行执行，则会有报错的可能性；另外，IDE一般是使用utf-8来保存源文件，所以在控制台输出的时候中文会乱码
 

@@ -1231,22 +1231,22 @@
 
   3. 测试用例
 
-    ```java
-    import com.suftz.bean.User;
-    import com.suftz.service.UserService;
-    import org.junit.Test;
-    import org.springframework.context.ApplicationContext;
-    import org.springframework.context.support.ClassPathXmlApplicationContext;
+     ```java
+     import com.suftz.bean.User;
+     import com.suftz.service.UserService;
+     import org.junit.Test;
+     import org.springframework.context.ApplicationContext;
+     import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-    public class SpringTest1 {
-        @Test
-        public void test5(){
-            ApplicationContext act=new ClassPathXmlApplicationContext("beans5.xml");
-            User user=act.getBean("myBean", User.class);
-            System.out.println(user);
-        }
-    }
-    ```
+     public class SpringTest1 {
+         @Test
+         public void test5(){
+             ApplicationContext act=new ClassPathXmlApplicationContext("beans5.xml");
+             User user=act.getBean("myBean", User.class);
+             System.out.println(user);
+         }
+     }
+     ```
 
 #### bean的作用域
 
@@ -3513,8 +3513,8 @@ public class SpringTest2 {
 
 基本具备知识：springMVC,SpringBoot,Maven,Java8新特性：lamada表达式和streamAPI
 //学完这些后再完善//todo
-#### webflux响应式编程
 
+#### webflux响应式编程
 
 ##### webflux响应式编程(Java实现)
 
