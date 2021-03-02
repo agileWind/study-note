@@ -1382,7 +1382,7 @@ firewall-cmd --reload
 * `reset slave;`
 * `SET GLOBAL SQL_SLAVE_SKIP_COUNTER = 1;` （在执行stop slave之后）
 
-每个mysq数据库都有一个唯一的UUID，如果两个数据库(甚至是两个Linux系统是复制的)，需要修改另一个mysql的UUID，步骤如下：
+每个mysq数据库都有一个唯一的UUID，如果两个数据库是复制的(甚至这两个Linux系统就是克隆而来的)，需要修改另一个mysql的UUID，步骤如下：
 
 1. 找到mysql配置文件`auto.cnf`，查找指令为`find / -name auto.cnf`,一般该文件在`/var/lib/mysql/`目录下
 2. 修改server-uuid的参数值，把字符串最后一位的值修改一下即可
