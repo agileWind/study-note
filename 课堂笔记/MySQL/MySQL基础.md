@@ -824,6 +824,8 @@ where e.employee_id is null
 
 ![外连接2](./images/外连接2.png)
 
+如果当前mysql版本不支持全外连接，则可以使用`左外 union 右外`
+
 ### 子查询
 
 * 含义：出现在其他语句内部的select语句，称为子查询或者内查询

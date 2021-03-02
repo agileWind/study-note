@@ -291,7 +291,7 @@ Xshell可以在Windows界面下用来访问远端不同系统下的服务器，�
 
 安装Xshell
 
-官网地址：https://www.netsarang.com/zh/free-for-home-school/
+官网地址：<https://www.netsarang.com/zh/free-for-home-school/>
 这是免费的学生版，通过填写一些信息后，会将下载地址发送到用户的邮箱中，通过去邮箱查看下载地址，可以获取下载链接进行下载
 
 Xshell连接Linux
@@ -1675,8 +1675,8 @@ ps命令是用来查看目前系统中，有哪些正在执行，以及它们执
 * 方式1：使用指令`setup`，进入到系统服务就可以看到。
   ![setup](images/setup.png)
   ![setup2](images/setup2.png)
-* 方式2:`ls -lh /etc/init.d/`
-
+* 方式2：`ls -lh /etc/init.d/`
+* 方式3：`ntsysv`可以直接进入到自启动列表
 服务的运行级别(runlevel):
 
 * Linux系统有7种运行级别(runlevel)： 常用的是级别3和5
@@ -3286,8 +3286,8 @@ bt宝塔Linux面板是提升运维效率的服务器管理软件，支持一键L
 
 2. 安装功能后会在控制台打印登录地址，账号密码，使用使用这些信息即可
 
-   外网面板地址: http://123.117.34.146:8888/da9503bb
-   内网面板地址: http://192.168.79.130:8888/da9503bb
+   外网面板地址: `http://123.117.34.146:8888/da9503bb`
+   内网面板地址: `http://192.168.79.130:8888/da9503bb`
    username: x2ej6jzd
    password: a8718ac0
 
