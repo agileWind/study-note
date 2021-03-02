@@ -3516,20 +3516,20 @@ bt宝塔Linux面板是提升运维效率的服务器管理软件，支持一键L
 ## 常用命令
 
 查看当前主机ip
-ip a
-
-查看指定服务
+`ip a`
 
 查看指定名称的进程
-ps -ef | grep 进程名称
+`ps -ef | grep 进程名称`
 
-查看指定端口
-
-查看所有服务
+查看指定端口被哪个进程占用
+`netstat -tunlp |grep 3306`
 
 查看所有端口监听情况
+`netstat -anp | more`
 
 查看防火墙端口打开状态
+`firewall-cmd --zone=public --list-ports`
 
 强制终止进程
-kill -9 进程名
+`kill -9 进程pid`
+

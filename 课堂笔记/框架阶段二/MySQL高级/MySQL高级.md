@@ -1203,19 +1203,186 @@ SQL：`show status like 'table%';`
 
 #### 4.3.3 行锁使用
 
+行锁是基于事务的，也就是说，事务的锁，是在行之间发生的，如果两个连接对数据进行读写操作，根据数据库设置的事务隔离级别，会出现不同的现象
+
+##### 无索引行锁升级为表锁
+
+事务是基于行锁的，也就是说一个事务对一行数据进行写，另一个事务对另一行数据进行写，本来是互不干扰的，不受行锁约束。但是，其中一个事务的操作令sql执行的索引失效，此时会升级为表锁，那么另一个事务对其他行数据也无法立刻写了，会进入阻塞状态
+开启事务后，比如一个连接A执行`update test_tbl set a=41 where b=4000;`
+另一个连接B执行`update test_tbl set b=9000 where a=9;`
+因为b字段其实是varchar类型，此时连接A的执行该语句后，会使得行锁升级为表锁，在该连接A提交事务之前，其他连接无法操作该表
+
+##### 间隙锁
+
+假设有连接，打开一个事务手动提交，执行`update test_tbl set b='2020' where a>1 and a<6;`
+其实该表的时候并不连续，比如没有a=2的行数据
+而此时有另一个连接，随后执行了`insert into test_tbl(a,b) values(2,9000);`，此时该sql会进入阻塞状态，只有等上一个连接执行提交事务后才能执行
+
+**什么是间隙锁**
+当使用范围条件而不是相等条件检索数据，并请求共享或排他锁时，InnoDB会给复合条件的已有数据记录的索引项加锁，对于键值在条件范围内但并不存在的记录，叫做“间隙（GAP）”
+
+**间隙锁的危害**
+因为query执行过程中通过范围查找的话，会锁定整个范围内所有的索引键值，即使这个键值并不存在
+间隙锁有一个比较致命的缺点，就是当锁定一个范围键值之后，即使某些不存在的键值也会被无辜的锁定，而造成在锁定的时候无法插入锁定键值范围内的任何数据，在某些场景下这可能会对性能造成很大的危害
+
+##### 锁定一行
+
+打开一个连接，然后设置手动提交事务
+`select * from test_tbl where a=8 for update;`
+该命令会使得a=8的数据被锁定，其他连接对该数据操作会被阻塞，直到锁定行的会话提交事务
 
 #### 4.3.4 行锁结论
 
+Innodb存储引擎由于实现了行级锁定，虽然在锁定机制的实现方面所带来的性能损耗可能比表级锁定会要更高一些，但是在整体并发处理能力方面要远远优于MyISAM的表级锁定。当系统并发量较高的时候，Innodb的整体性能比MyISAM有明显的优势
 
+但是，Innodb的行级锁定同样也有脆弱的一面，当我们使用不当的时候，可能会让Innodb的整体性能表现不仅不能比MyISAM高，甚至可能会更差
 
 #### 4.3.5 行锁分析
 
+通过检查Innodb_row_lock状态变量来分析系统上的行锁的争夺情况
+`show status like 'innodb_row_lock%';`
 
+各状态量的说明如下：
+
+Innodb_row_lock_current_waits：当前正在等待锁定的数量
+**Innodb_row_lock_time**：从系统启动到现在锁定总时间长度
+**Innodb_row_lock_time_avg**：每次等待所花平均时间
+Innodb_row_lock_time_max：从系统启动到现在等待最常的一次所花的时间
+**Innodb_row_lock_waits**：系统启动后到现在总共等待的次数
+
+尤其是当等待次数很高，而且每次等待时长也不小的时候，就需要分析系统中为什么会有如此多的等待，然后根据分析结果着手指定优化计划
 
 #### 4.3.6 优化建议
 
+* 尽可能让所有的数据检索都通过索引来完成，避免无索引行锁升级为表锁
+* 合理设计索引，尽量缩小锁的范围
+* 尽可能较少检索条件，避免间隙锁
+* 尽可能控制事务大小，减少锁定资源量和时间长度
+* 尽可能低级别事务隔离
+
 ### 4.4 页锁
 
-
+开锁和加锁时间介于表锁和行锁之间，会出现死锁，锁定粒度介于表锁和行锁之间，并发度一般
 
 ## 第五章 主从复制
+
+### 5.1 复制的基本原理
+
+slave会从master读取binlog文件来进行数据同步
+
+![mysql主从复制原理](images/mysql主从复制原理.png)
+
+复制的三步骤：
+
+1. master将改变记录到二进制日志（binary log），这些记录过程叫做二进制日志事件（binary log events）
+2. slave将master的binary log events拷贝到中继日志（relay log）
+3. slave重做中继日志中的事件，将改变应用到自己的数据库中。MySQL的复制是异步且串行化的
+
+### 5.2 复制的基本原则
+
+1. 每个slave只有一个master
+2. 每个slave只能有一个唯一的服务器ID
+3. 每个master可以有多个slave
+
+### 5.3 复制的最大问题
+
+延时
+
+### 5.4 一主一从配置
+
+配置主从复制，两个mysql的版本一致，且后台以服务运行
+主从都配置在[mysqld]节点下，都是小写
+
+#### 5.4.1 主机my.cnf配置
+
+1. [必须]主服务器唯一id
+   server-di=1
+2. [必须]启用二进制日志
+   log-bin=/var/lib/mysql/mysqlbin   这个目录地址，以及文件名mysqlbin都是自定义的
+3. [可选]启用错误日志
+   mysql57默认就是启用的，log-error=/var/log/mysqld.log
+4. [可选]根目录
+   basedir=/var/lib/mysql/
+5. [可选]临时目录
+   tmpdir=/var/lib/mysql/
+6. [可选]数据目录
+   datadir=/var/lib/mysql/
+7. 主机，设置读写都可以
+   read-only=0
+8. [可选]设置不要复制的数据库
+   binlog-ignore-db=mysql
+9. [可选]设置需要复制的数据库
+   binlog-do-db=testdb
+
+#### 5.4.2 从机my.cnf配置
+
+1. [必须]从服务器唯一id
+   server-id=2
+2. [可选]启用二进制日志
+   log-bin=/var/lib/mysql/agilemysqlbin
+
+因为主从都修改过配置文件，所以主从都需要重启mysqld服务：`systemctl restart mysqld.service`
+
+主从数据库都需要打开3306的端口
+
+```bash
+firewall-cmd --permanent --add-port=8080/tcp
+firewall-cmd --reload
+```
+
+#### 5.4.3 在主mysql服务器上建立账户并指定授权slave
+
+1. 使用命令登录到主mysql：`mysql -h 192.168.79.130 -p 3306 -u root -psysagile123`
+2. 如果密码级别太低，会被阻止授权，所以可以设置(生产环境不要进行该设置)：`set global validate_password_policy=0;`
+3. 使用mysql命令授权：`grant replication slave on *.* to 'sysagile'@'192.168.79.131' identified by '123qwe123';`
+4. 执行`flush privileages;`
+5. 查询master的状态
+   `show master status;`记录下File和Position的值
+   ![master状态](images/master状态.png)
+
+> 主库执行完该步骤后不要再操作主服务器的mysql了，防止服务器状态值变化，而记录的position过时
+
+#### 5.4.4 在从mysql服务器上配置需要复制的主机
+
+1. 绑定master主机，这里的参数有：主机ip,登录master主机的用户名,登录密码，备份文件，起始地址
+   `change master to master_host='192.168.79.130',master_user='sysagile',master_password='123qwe123',master_log_file='mysqlbin.000002',master_log_pos=154;`
+2. 启动从服务器复制功能
+   `start slave;`
+3. 查看从服务器的复制功能的状态
+   `show slave status\G`
+   ![slave状态](images/slave状态.png)
+
+4. 此时配置完成，在主库中对同步的数据库中的数据进行修改更新，会同步到从库中
+   主机新建库，新建表，insert记录，从机会复制这些操作
+
+#### 5.4.5 mysql主从复制说明
+
+这个同步只能在主从配置之后，开启主从复制之后，主库建立数据库，在新数据库里创建数据库表，以及往新数据库表中添加数据，才能同步数据
+
+比如主库已有一个数据库testdb,而从库没有该数据库，此时主库在testdb中创建数据表，或者进行数据的插入更新操作，也不会被同步
+
+如果出现：
+
+1. 在主库操作一个，在从库中并不存在的数据库中创建数据库表
+2. 在主库操作一个，在从库中并不存在的数据库表中插入或者更新数据
+
+则会报错。
+而且可能会导致之后的同步都无法进行
+
+> 即当主库已存在的数据库，数据库表，而这些在从库中并不存在的时候，就无法同步这些数据。
+> 要么手动在从库建立这些数据，才能同步。也可以在主库导出数据，然后导入到从库中，这样就能同步主库之前的数据了
+
+出问题后，可以查看的参数：
+
+1. Read_Master_Log_Pos，是否与主库的Position保持一致
+2. Exec_Mster_Log_Pos：是否与主库的Position保持一致
+
+可执行的修复指令：
+
+* `reset slave;`
+* `SET GLOBAL SQL_SLAVE_SKIP_COUNTER = 1;` （在执行stop slave之后）
+
+每个mysq数据库都有一个唯一的UUID，如果两个数据库(甚至是两个Linux系统是复制的)，需要修改另一个mysql的UUID，步骤如下：
+
+1. 找到mysql配置文件`auto.cnf`，查找指令为`find / -name auto.cnf`,一般该文件在`/var/lib/mysql/`目录下
+2. 修改server-uuid的参数值，把字符串最后一位的值修改一下即可
