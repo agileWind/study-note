@@ -1907,8 +1907,9 @@ jdk下载地址：<https://www.oracle.com/java/technologies/javase/javase-jdk8-d
    export PATH=$JAVA_HOME/bin:$PATH
    ```
 
-5. 在任意目录下使用命令`javac -version`和`java -version`查看当前java的版本
-6. 在家目录下，新建一个Hello.java文件，编译并运行
+5. 执行`source /etc/profile` 来更新配置
+6. 在任意目录下使用命令`javac -version`和`java -version`查看当前java的版本
+7. 在家目录下，新建一个Hello.java文件，编译并运行
 
 ### Idea安装
 
@@ -3517,6 +3518,7 @@ bt宝塔Linux面板是提升运维效率的服务器管理软件，支持一键L
 
 查看当前主机ip
 `ip a`
+`ifconfig`
 
 查看指定名称的进程
 `ps -ef | grep 进程名称`
@@ -3529,7 +3531,17 @@ bt宝塔Linux面板是提升运维效率的服务器管理软件，支持一键L
 
 查看防火墙端口打开状态
 `firewall-cmd --zone=public --list-ports`
+`firewall-cmd --list-all`
 
 强制终止进程
 `kill -9 进程pid`
 
+查看Linux系统版本(Centos)
+`cat /etc/redhat-release`
+
+测试网通
+`telnet ip port`
+
+打开一个端口
+`firewall-cmd --permanent --add-port=8080/tcp`
+`firewall-cmd --reload`

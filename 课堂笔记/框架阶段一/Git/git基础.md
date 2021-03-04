@@ -549,3 +549,54 @@ gitlab-ctl stop
 初次登录时需要为 gitlab 的 root 用户设置密码。
 
 >如果安装成功后无法访问，应该会需要停止防火墙服务，或者打开该gitlab服务的端口号才能正常使用
+
+### centos7安装gitlab
+
+注意：不同的gitlab版本可能对应不同centos版本，因为gitlab安装包依赖的其他包，不同centos不一定存在
+
+下列安装的版本信息如下：
+CentOS Linux release 7.9.2009 (Core)
+
+需要先安装openssh-server、policycoreutils-python
+
+```bash
+install -y curl policycoreutils-python openssh-server
+systemctl enable sshd
+systemctl start sshd
+
+firewall-cmd --permanent --add-service=http
+firewall-cmd --permanent --add-service=https
+systemctl reload firewalld
+systemctl start firewalld
+
+yum install postfix
+systemctl enable postfix
+systemctl start postfix
+```
+
+如果报这样一条信息：Job for postfix.service failed because the control process exited with error code. See “systemctl status postfix.service” and “journalctl -xe” for details.
+解决方法：修改 /etc/postfix/main.cf的配置并保存
+inet_interfaces = all
+inet_protocols = ipv4
+
+安装之前需要去设置/etc/gitlab/gitlab.rb，修改external_url参数
+
+执行`gitlab-ctl reconfigure`使配置生效
+
+如果上述命令执行过程中报错：ruby_block[authorize Grafana with GitLab] action run
+卡很长时间，然后报错
+There was an error running gitlab-ctl reconfigure: ruby_block[authorize Grafana with GitLab] (gitlab::grafana line 92) had an error: Mixlib::ShellOut::CommandTimeout: Command timed out after 600s
+
+重新修改gitlab.rb文件，修改配置grafana['enable'] = false
+
+然后重新执行`gitlab-ctl reconfigure`
+`gitlab-ctl start`
+`gitlab-ctl stop`
+
+> 如果gitlab的访问端口没有打开，可以使用命令打开防火墙的端口访问
+
+使用命令下载安装包
+`wget --content-disposition https://packages.gitlab.com/gitlab/gitlab-ce/packages/el/7/gitlab-ce-12.0.0-ce.0.el7.x86_64.rpm/download.rpm`
+
+也可以去官网下载：
+<https://packages.gitlab.com/gitlab/gitlab-ce/packages/el/7/gitlab-ce-12.0.0-ce.0.el7.x86_64.rpm>
