@@ -600,3 +600,9 @@ There was an error running gitlab-ctl reconfigure: ruby_block[authorize Grafana 
 
 也可以去官网下载：
 <https://packages.gitlab.com/gitlab/gitlab-ce/packages/el/7/gitlab-ce-12.0.0-ce.0.el7.x86_64.rpm>
+
+## 常见问题处理
+
+1. 问题：
+Failed to connect to github.com port 443: Timed out
+解决：在git终端输入：`git config --global http.sslVerify "false"`
