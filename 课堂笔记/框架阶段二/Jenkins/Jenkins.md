@@ -330,7 +330,7 @@ tomcat的manager页面，默认只有本机地址才能访问，需要远程访�
 
 Jenkins2.204.6之前，Jenkins系统安全设置有一个选项，禁用CSRF保护功能，只要使用这个功能，则能够让github调用Jenkins的地址去自动构建
 
-Jenkins2.204.6之后，直接移除了`删除禁用 CSRF 保护的功能`，则github无法使用约定的地址`http://www.suftz.com/jenkins/job/hello/build?token=agile_jenkins_test135`发送post请求
+Jenkins2.204.6之后，直接移除了`禁用 CSRF 保护的功能`，则github无法使用约定的地址`http://www.suftz.com/jenkins/job/hello/build?token=agile_jenkins_test135`发送post请求
 
 解决办法：
 
@@ -342,6 +342,7 @@ Jenkins2.204.6之后，直接移除了`删除禁用 CSRF 保护的功能`，则g
 hudson.security.csrf.GlobalCrumbIssuerConfiguration.DISABLE_CSRF_PROTECTION=true
 ```
 
+![jenkins执行脚本](images/jenkins执行脚本.png)
 注意：这种方式设置值，重启后则设置无效
 
 或者将参数
